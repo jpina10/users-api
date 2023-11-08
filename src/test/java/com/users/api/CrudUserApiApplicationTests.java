@@ -1,10 +1,10 @@
-package com.code.challenge;
+package com.users.api;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class VelvCodeChallengeApplicationTests {
+class CrudUserApiApplicationTests {
 
     @Test
     void contextLoads() {
