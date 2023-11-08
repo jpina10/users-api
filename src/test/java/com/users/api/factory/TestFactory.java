@@ -40,10 +40,6 @@ public class TestFactory {
                 .build();
     }
 
-    public UserDto getUserDto() {
-        return UserDto.builder().build();
-    }
-
     public RandomUserApiResponse getRandomUserApiResponseWithError() {
         return RandomUserApiResponse.builder()
                 .error(Error.builder()
