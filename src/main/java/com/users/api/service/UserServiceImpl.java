@@ -43,10 +43,6 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new UserNotFoundException("user with username " + username + " does not exist."));
     }
 
-    /*
-     * the random user api doesn't send an exception when down but send a JSON with an error field, this is why a try-catch wasn't used
-     * https://randomuser.me/documentation#errors
-     * */
     @Override
     public String createRandomUser() {
         var response = callRandomUserApi();
@@ -117,6 +113,10 @@ public class UserServiceImpl implements UserService {
         var response = randomUserApiClient.getUserData();
         var hasError = hasError(response);
 
+        /*
+         * the random user api doesn't send an exception when down but send a JSON with an error field, this is why a try-catch wasn't used
+         * https://randomuser.me/documentation#errors
+         * */
         if (hasError) {
             String errorMessage = response.getError().getErrorMessage();
             log.error(errorMessage);
