@@ -17,8 +17,10 @@ import java.io.IOException;
 @Component
 public class JsonPatchConverter extends AbstractHttpMessageConverter<JsonPatch> {
 
+    public static final String APPLICATION_JSON_PATCH = "application/json-patch+json";
+
     public JsonPatchConverter() {
-        super(MediaType.valueOf("application/json-patch+json"));
+        super(MediaType.valueOf(APPLICATION_JSON_PATCH));
     }
 
     @Override

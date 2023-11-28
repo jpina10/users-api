@@ -1,12 +1,11 @@
 package com.users.api.factory;
 
-import com.users.api.dto.UserDto;
 import com.users.api.model.Address;
 import com.users.api.model.User;
 import com.users.api.model.UserDetails;
 import com.users.api.nameapi.RandomUserApiResponse;
-import com.users.api.nameapi.model.*;
 import com.users.api.nameapi.model.Error;
+import com.users.api.nameapi.model.*;
 
 import java.time.LocalDateTime;
 import java.util.List;

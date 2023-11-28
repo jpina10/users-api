@@ -44,29 +44,21 @@ public class UserServiceImpl implements UserService {
     }
 
     /*
-    * the random user api doesn't send an exception when down but send a JSON with an error field, this is why a try-catch wasn't used
-    * https://randomuser.me/documentation#errors
-    * */
+     * the random user api doesn't send an exception when down but send a JSON with an error field, this is why a try-catch wasn't used
+     * https://randomuser.me/documentation#errors
+     * */
     @Override
     public String createRandomUser() {
-            log.info("calling random user API...");
-            var response = randomUserApiClient.getUserData();
-            var hasError = hasError(response);
+        var response = callRandomUserApi();
 
-            if(hasError) {
-                String errorMessage = response.getError().getErrorMessage();
-                log.error(errorMessage);
+        var userData = response.getResults().get(0);
+        var user = randomUserMapper.toUser(userData);
+        String username = user.getUsername();
 
-                throw new ThirdPartyException(errorMessage);
-            }
+        log.info("saving user with username {}", username);
+        userRepository.save(user);
 
-            var userData = response.getResults().get(0);
-            var user = randomUserMapper.toUser(userData);
-            String username = user.getUsername();
-            log.info("saving user with username {}", username);
-            userRepository.save(user);
-
-            return username;
+        return username;
     }
 
     @Override
@@ -111,12 +103,28 @@ public class UserServiceImpl implements UserService {
 
         User updatedUser = patchMapper.toEntity(updatedPatchUserDto, originalUser);
 
-       userRepository.save(updatedUser);
+        userRepository.save(updatedUser);
     }
 
     private User findUser(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("user with username" + username + " does not exist."));
+    }
+
+    private RandomUserApiResponse callRandomUserApi() {
+        log.info("calling random user API...");
+
+        var response = randomUserApiClient.getUserData();
+        var hasError = hasError(response);
+
+        if (hasError) {
+            String errorMessage = response.getError().getErrorMessage();
+            log.error(errorMessage);
+
+            throw new ThirdPartyException(errorMessage);
+        }
+
+        return response;
     }
 
     private boolean hasError(RandomUserApiResponse response) {
