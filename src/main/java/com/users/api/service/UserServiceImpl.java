@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.users.api.dto.UserDto;
 import com.users.api.exception.ThirdPartyException;
 import com.users.api.exception.UserNotFoundException;
-import com.users.api.mapper.PatchMapper;
 import com.users.api.mapper.RandomUserMapper;
 import com.users.api.mapper.UserMapper;
 import com.users.api.model.User;
@@ -20,7 +19,6 @@ import javax.json.JsonPatch;
 import javax.json.JsonStructure;
 import javax.json.JsonValue;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -79,7 +77,7 @@ public class UserServiceImpl implements UserService {
                     UserDetails userDetails = user.getUserDetails();
                     return userMapper.toDto(user, userDetails);
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
