@@ -90,11 +90,11 @@ public class UserServiceImpl implements UserService {
         log.debug("original user  {}", originalUser);
 
         JsonStructure target = objectMapper.convertValue(originalUser, JsonStructure.class);
-        JsonValue patchedUser = jsonPatch.apply(target);
+        JsonValue patched = jsonPatch.apply(target);
 
-        originalUser = objectMapper.convertValue(patchedUser, User.class);
+        var patchedUser = objectMapper.convertValue(patched, User.class);
 
-        userRepository.save(originalUser);
+        userRepository.save(patchedUser);
     }
 
 
