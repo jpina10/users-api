@@ -39,11 +39,11 @@ public interface PatchMapper {
         return LocalDateTime.now();
     }
 
-    @AfterMapping
+/*    @AfterMapping
     default void setUserIntoUserDetails(@MappingTarget User user) {
         UserDetails userDetails = user.getUserDetails();
         userDetails.setUser(user);
-    }
+    }*/
 
 
 }

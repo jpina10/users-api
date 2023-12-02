@@ -89,18 +89,14 @@ public class UserServiceImpl implements UserService {
         User originalUser = this.findUser(username);
         log.debug("original user  {}", originalUser);
 
-        PatchUserDto patchUserDto = patchMapper.toPatchUserDto(originalUser, originalUser.getUserDetails());
+        JsonStructure target = objectMapper.convertValue(originalUser, JsonStructure.class);
+        JsonValue patchedUser = jsonPatch.apply(target);
 
-        JsonStructure target = objectMapper.convertValue(patchUserDto, JsonStructure.class);
-        JsonValue patched = jsonPatch.apply(target);
+        originalUser = objectMapper.convertValue(patchedUser, User.class);
 
-        PatchUserDto updatedPatchUserDto = objectMapper.convertValue(patched, PatchUserDto.class);
-        log.debug("modified user {}", updatedPatchUserDto);
-
-        User updatedUser = patchMapper.toEntity(updatedPatchUserDto, originalUser);
-
-        userRepository.save(updatedUser);
+        userRepository.save(originalUser);
     }
+
 
     private User findUser(String username) {
         return userRepository.findByUsername(username)

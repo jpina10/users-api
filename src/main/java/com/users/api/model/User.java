@@ -1,5 +1,6 @@
 package com.users.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,7 +26,8 @@ public class User {
     private LocalDateTime updatedOn;
     private boolean isEnabled;
 
-    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonIgnore
     private UserDetails userDetails;
 
     @ManyToMany(mappedBy = "users")
