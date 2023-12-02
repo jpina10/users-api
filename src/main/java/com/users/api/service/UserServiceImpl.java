@@ -1,6 +1,6 @@
 package com.users.api.service;
 
-import com.users.api.dto.PatchUserDto;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.users.api.dto.UserDto;
 import com.users.api.exception.ThirdPartyException;
 import com.users.api.exception.UserNotFoundException;
@@ -12,7 +12,6 @@ import com.users.api.model.UserDetails;
 import com.users.api.nameapi.RandomUserApiResponse;
 import com.users.api.nameapi.api.RandomUserApiClient;
 import com.users.api.repository.UserRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,7 +30,6 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final RandomUserMapper randomUserMapper;
-    private final PatchMapper patchMapper;
     private final RandomUserApiClient randomUserApiClient;
     private final ObjectMapper objectMapper;
 
