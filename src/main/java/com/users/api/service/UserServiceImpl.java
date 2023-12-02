@@ -1,10 +1,9 @@
 package com.users.api.service;
 
-import com.users.api.dto.PatchUserDto;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.users.api.dto.UserDto;
 import com.users.api.exception.ThirdPartyException;
 import com.users.api.exception.UserNotFoundException;
-import com.users.api.mapper.PatchMapper;
 import com.users.api.mapper.RandomUserMapper;
 import com.users.api.mapper.UserMapper;
 import com.users.api.model.User;
@@ -12,7 +11,6 @@ import com.users.api.model.UserDetails;
 import com.users.api.nameapi.RandomUserApiResponse;
 import com.users.api.nameapi.api.RandomUserApiClient;
 import com.users.api.repository.UserRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,7 +19,6 @@ import javax.json.JsonPatch;
 import javax.json.JsonStructure;
 import javax.json.JsonValue;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +28,6 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final RandomUserMapper randomUserMapper;
-    private final PatchMapper patchMapper;
     private final RandomUserApiClient randomUserApiClient;
     private final ObjectMapper objectMapper;
 
@@ -43,30 +39,18 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new UserNotFoundException("user with username " + username + " does not exist."));
     }
 
-    /*
-    * the random user api doesn't send an exception when down but send a JSON with an error field, this is why a try-catch wasn't used
-    * https://randomuser.me/documentation#errors
-    * */
     @Override
     public String createRandomUser() {
-            log.info("calling random user API...");
-            var response = randomUserApiClient.getUserData();
-            var hasError = hasError(response);
+        var response = callRandomUserApi();
 
-            if(hasError) {
-                String errorMessage = response.getError().getErrorMessage();
-                log.error(errorMessage);
+        var userData = response.getResults().get(0);
+        var user = randomUserMapper.toUser(userData);
+        String username = user.getUsername();
 
-                throw new ThirdPartyException(errorMessage);
-            }
+        log.info("saving user with username {}", username);
+        userRepository.save(user);
 
-            var userData = response.getResults().get(0);
-            var user = randomUserMapper.toUser(userData);
-            String username = user.getUsername();
-            log.info("saving user with username {}", username);
-            userRepository.save(user);
-
-            return username;
+        return username;
     }
 
     @Override
@@ -93,7 +77,7 @@ public class UserServiceImpl implements UserService {
                     UserDetails userDetails = user.getUserDetails();
                     return userMapper.toDto(user, userDetails);
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -101,22 +85,38 @@ public class UserServiceImpl implements UserService {
         User originalUser = this.findUser(username);
         log.debug("original user  {}", originalUser);
 
-        PatchUserDto patchUserDto = patchMapper.toPatchUserDto(originalUser, originalUser.getUserDetails());
-
-        JsonStructure target = objectMapper.convertValue(patchUserDto, JsonStructure.class);
+        JsonStructure target = objectMapper.convertValue(originalUser, JsonStructure.class);
         JsonValue patched = jsonPatch.apply(target);
 
-        PatchUserDto updatedPatchUserDto = objectMapper.convertValue(patched, PatchUserDto.class);
-        log.debug("modified user {}", updatedPatchUserDto);
+        var patchedUser = objectMapper.convertValue(patched, User.class);
 
-        User updatedUser = patchMapper.toEntity(updatedPatchUserDto, originalUser);
-
-       userRepository.save(updatedUser);
+        userRepository.save(patchedUser);
     }
+
 
     private User findUser(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("user with username" + username + " does not exist."));
+    }
+
+    private RandomUserApiResponse callRandomUserApi() {
+        log.info("calling random user API...");
+
+        var response = randomUserApiClient.getUserData();
+        var hasError = hasError(response);
+
+        /*
+         * the random user api doesn't send an exception when down but send a JSON with an error field, this is why a try-catch wasn't used
+         * https://randomuser.me/documentation#errors
+         * */
+        if (hasError) {
+            String errorMessage = response.getError().getErrorMessage();
+            log.error(errorMessage);
+
+            throw new ThirdPartyException(errorMessage);
+        }
+
+        return response;
     }
 
     private boolean hasError(RandomUserApiResponse response) {
