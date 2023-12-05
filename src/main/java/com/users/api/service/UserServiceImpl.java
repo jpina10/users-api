@@ -2,6 +2,7 @@ package com.users.api.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.users.api.dto.UserDto;
+import com.users.api.exception.ResourceAlreadyExistsException;
 import com.users.api.exception.ResourceNotFoundException;
 import com.users.api.exception.ThirdPartyException;
 import com.users.api.mapper.RandomUserMapper;
@@ -51,12 +52,15 @@ public class UserServiceImpl implements UserService {
         var user = randomUserMapper.toUser(userData);
         String username = user.getUsername();
 
+        existsUser(username);
+
         log.info("saving user with username {}", username);
         userRepository.save(user);
 
         setUserAddress(user, userData.getLocation());
         return username;
     }
+
 
     @Override
     @Transactional
@@ -132,4 +136,9 @@ public class UserServiceImpl implements UserService {
         return response.getError() != null;
     }
 
+    private void existsUser(String username) {
+        userRepository.findByUsername(username).ifPresent(user1 -> {
+            throw new ResourceAlreadyExistsException("The user with username " + username + " already exists.");
+        });
+    }
 }

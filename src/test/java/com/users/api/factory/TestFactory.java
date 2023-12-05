@@ -20,7 +20,12 @@ public class TestFactory {
         user.setCreatedOn(LocalDateTime.now());
         user.setUpdatedOn(LocalDateTime.now());
         user.setEnabled(false);
-        //user.setUserDetails(getUserDetails());
+        user.setEmail("email");
+        user.setFirstName("firstName");
+        user.setLastName("lastName");
+        user.setPhoneNumber("phoneNumber");
+        user.setAddresses(List.of(getAddress()));
+        user.setMainAddressId(getAddress().getId());
 
         return user;
     }
