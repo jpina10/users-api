@@ -1,21 +1,27 @@
 package com.users.api.service;
 
 import com.users.api.dto.UserDto;
+import com.users.api.exception.ResourceAlreadyExistsException;
+import com.users.api.exception.ResourceNotFoundException;
 import com.users.api.exception.ThirdPartyException;
-import com.users.api.exception.UserNotFoundException;
 import com.users.api.factory.TestFactory;
 import com.users.api.mapper.RandomUserMapper;
 import com.users.api.mapper.UserMapper;
 import com.users.api.model.User;
 import com.users.api.nameapi.RandomUserApiResponse;
 import com.users.api.nameapi.api.RandomUserApiClient;
+import com.users.api.nameapi.model.Location;
 import com.users.api.nameapi.model.Result;
 import com.users.api.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import javax.json.JsonPatch;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,6 +48,8 @@ class UserServiceImplTest {
     private RandomUserMapper randomUserMapper;
     @Mock
     private RandomUserApiClient randomUserApiClient;
+    @Mock
+    private AddressService addressService;
 
     @InjectMocks
     private UserServiceImpl userService;
@@ -52,26 +60,25 @@ class UserServiceImplTest {
 
         Optional<User> userOptional = Optional.of(user);
         when(userRepository.findByUsername(user.getUsername())).thenReturn(userOptional);
-        when(userMapper.toDto(user, user.getUserDetails())).thenReturn(Mockito.mock(UserDto.class));
+        when(userMapper.toDto(user)).thenReturn(mock(UserDto.class));
 
         userService.findUserByUserName(USERNAME);
 
         verify(userRepository).findByUsername(USERNAME);
-        verify(userMapper).toDto(user, user.getUserDetails());
     }
 
     @Test
     void findByUserNameWithNonExistingUserNameShouldThrowException() {
         when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> userService.findUserByUserName(USERNAME));
+        assertThrows(ResourceNotFoundException.class, () -> userService.findUserByUserName(USERNAME));
 
         verify(userRepository).findByUsername(USERNAME);
         verifyNoInteractions(userMapper);
     }
 
     @Test
-    void createUserWithApiAvailable() {
+    void createUserWithApiAvailableAndNotExistingUsername() {
         User user = testFactory.getUser();
         RandomUserApiResponse randomUserApiResponse = testFactory.getRandomUserApiResponse();
         Result result = randomUserApiResponse.getResults().get(0);
@@ -79,11 +86,44 @@ class UserServiceImplTest {
         when(randomUserApiClient.getUserData()).thenReturn(randomUserApiResponse);
         when(randomUserMapper.toUser(result)).thenReturn(user);
 
+        Location location = result.getLocation();
+        when(addressService.createAddress(user, location)).thenReturn(user.getAddresses().get(0));
+
         userService.createRandomUser();
 
         verify(randomUserApiClient).getUserData();
         verify(randomUserMapper).toUser(result);
         verify(userRepository).save(user);
+        verify(addressService).createAddress(user, location);
+    }
+
+    @Test
+    void createUserWithApiAvailableAndExistingUsernameShouldThrowException() {
+        User user = testFactory.getUser();
+        RandomUserApiResponse randomUserApiResponse = testFactory.getRandomUserApiResponse();
+        Result result = randomUserApiResponse.getResults().get(0);
+
+        when(randomUserApiClient.getUserData()).thenReturn(randomUserApiResponse);
+        when(randomUserMapper.toUser(result)).thenReturn(user);
+        when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.of(user));
+
+        assertThrows(ResourceAlreadyExistsException.class, () -> userService.createRandomUser());
+
+        verify(randomUserApiClient).getUserData();
+        verify(randomUserMapper).toUser(result);
+    }
+
+    @Test
+    void updateUser() {
+        User user = testFactory.getUser();
+        JsonPatch jsonPatch = mock(JsonPatch.class);
+
+        String username = user.getUsername();
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+
+        userService.updateUser(username, jsonPatch);
+
+        verify(userRepository).findByUsername(username);
     }
 
     @Test
@@ -129,13 +169,11 @@ class UserServiceImplTest {
         List<User> users = List.of(user);
 
         when(userRepository.findAll()).thenReturn(users);
-        when(userMapper.toDto(user, user.getUserDetails())).thenReturn(mock(UserDto.class));
 
         List<UserDto> allUsers = userService.getAllUsers();
 
-        assertThat(allUsers.size()).isEqualTo(users.size());
+        assertThat(allUsers).hasSameSizeAs(users);
 
         verify(userRepository).findAll();
-        verify(userMapper).toDto(user, user.getUserDetails());
     }
 }

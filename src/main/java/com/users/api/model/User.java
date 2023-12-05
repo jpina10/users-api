@@ -1,8 +1,10 @@
 package com.users.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -13,6 +15,7 @@ import java.util.List;
 @Setter
 @Entity
 @Table(name = "users")
+@SecondaryTable(name = "user_details", pkJoinColumns = @PrimaryKeyJoinColumn(name = "user_id"))
 public class User {
 
     @Id
@@ -21,14 +24,31 @@ public class User {
 
     @Column(unique = true)
     private String username;
+
     private String password;
+
     private LocalDateTime createdOn;
+
     private LocalDateTime updatedOn;
+
     private boolean isEnabled;
 
-    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JsonIgnore
-    private UserDetails userDetails;
+    @Column(table = "user_details")
+    private String email;
+
+    @Column(table = "user_details")
+    private String firstName;
+
+    @Column(table = "user_details")
+    private String lastName;
+
+    @Column(table = "user_details")
+    private String phoneNumber;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Address> addresses;
+
+    private Long mainAddressId;
 
     @ManyToMany(mappedBy = "users")
     private List<Role> roles;
