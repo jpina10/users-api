@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.users.api</groupId>
     <artifactId>crud-user-api</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>crud-user-api</name>
     <description>CRUD application for users</description>
     <properties>
