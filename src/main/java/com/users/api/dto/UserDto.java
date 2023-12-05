@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Builder
 @AllArgsConstructor
 @Data
@@ -29,5 +31,5 @@ public class UserDto {
     private String phoneNumber;
 
     @Schema(description = "location of the user")
-    private LocationDto location;
+    private List<AddressDto> addresses;
 }

@@ -2,7 +2,6 @@ package com.users.api.factory;
 
 import com.users.api.model.Address;
 import com.users.api.model.User;
-import com.users.api.model.UserDetails;
 import com.users.api.nameapi.RandomUserApiResponse;
 import com.users.api.nameapi.model.Error;
 import com.users.api.nameapi.model.*;
@@ -21,7 +20,12 @@ public class TestFactory {
         user.setCreatedOn(LocalDateTime.now());
         user.setUpdatedOn(LocalDateTime.now());
         user.setEnabled(false);
-        user.setUserDetails(getUserDetails());
+        user.setEmail("email");
+        user.setFirstName("firstName");
+        user.setLastName("lastName");
+        user.setPhoneNumber("phoneNumber");
+        user.setAddresses(List.of(getAddress()));
+        user.setMainAddressId(getAddress().getId());
 
         return user;
     }
@@ -74,17 +78,6 @@ public class TestFactory {
         return Name.builder()
                 .firstName("firstName")
                 .lastName("lastName")
-                .build();
-    }
-
-    private UserDetails getUserDetails() {
-        return UserDetails.builder()
-                .id(1L)
-                .email("email")
-                .firstName("firstName")
-                .lastName("lastName")
-                .phoneNumber("phoneNumber")
-                .address(getAddress())
                 .build();
     }
 

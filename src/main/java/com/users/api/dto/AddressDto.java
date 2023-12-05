@@ -9,12 +9,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @NoArgsConstructor
 @Data
 @Schema(name = "Location")
-public class LocationDto {
+public class AddressDto {
 
-    @Schema(description = "street of the user", example = "1st Street")
-    private String street;
-
-    private String number;
+    private StreetDto street;
 
     @Schema(description = "city of the user", example = "Wildberg")
     private String city;
