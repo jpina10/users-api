@@ -2,18 +2,20 @@ package com.users.api.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.users.api.dto.UserDto;
+import com.users.api.exception.ResourceNotFoundException;
 import com.users.api.exception.ThirdPartyException;
-import com.users.api.exception.UserNotFoundException;
 import com.users.api.mapper.RandomUserMapper;
 import com.users.api.mapper.UserMapper;
+import com.users.api.model.Address;
 import com.users.api.model.User;
-import com.users.api.model.UserDetails;
 import com.users.api.nameapi.RandomUserApiResponse;
 import com.users.api.nameapi.api.RandomUserApiClient;
+import com.users.api.nameapi.model.Location;
 import com.users.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.json.JsonPatch;
 import javax.json.JsonStructure;
@@ -30,16 +32,18 @@ public class UserServiceImpl implements UserService {
     private final RandomUserMapper randomUserMapper;
     private final RandomUserApiClient randomUserApiClient;
     private final ObjectMapper objectMapper;
+    private final AddressService addressService;
 
     @Override
     public UserDto findUserByUserName(String username) {
         log.info("Retrieving user with username: {}", username);
         return userRepository.findByUsername(username)
-                .map(user -> userMapper.toDto(user, user.getUserDetails()))
-                .orElseThrow(() -> new UserNotFoundException("user with username " + username + " does not exist."));
+                .map(userMapper::toDto)
+                .orElseThrow(() -> new ResourceNotFoundException("user with username " + username + " does not exist."));
     }
 
     @Override
+    @Transactional
     public String createRandomUser() {
         var response = callRandomUserApi();
 
@@ -50,10 +54,12 @@ public class UserServiceImpl implements UserService {
         log.info("saving user with username {}", username);
         userRepository.save(user);
 
+        setUserAddress(user, userData.getLocation());
         return username;
     }
 
     @Override
+    @Transactional
     public void enableUser(String username) {
         var user = this.findUser(username);
 
@@ -62,6 +68,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void deleteUser(String username) {
         User user = this.findUser(username);
 
@@ -73,14 +80,12 @@ public class UserServiceImpl implements UserService {
         List<User> users = userRepository.findAll();
 
         return users.stream()
-                .map(user -> {
-                    UserDetails userDetails = user.getUserDetails();
-                    return userMapper.toDto(user, userDetails);
-                })
+                .map(userMapper::toDto)
                 .toList();
     }
 
     @Override
+    @Transactional
     public void updateUser(String username, JsonPatch jsonPatch) {
         User originalUser = this.findUser(username);
         log.debug("original user  {}", originalUser);
@@ -93,10 +98,14 @@ public class UserServiceImpl implements UserService {
         userRepository.save(patchedUser);
     }
 
+    private void setUserAddress(User user, Location location) {
+        Address address = addressService.createAddress(user, location);
+        user.setMainAddressId(address.getId());
+    }
 
     private User findUser(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("user with username" + username + " does not exist."));
+                .orElseThrow(() -> new ResourceNotFoundException("user with username" + username + " does not exist."));
     }
 
     private RandomUserApiResponse callRandomUserApi() {

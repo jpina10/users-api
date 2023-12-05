@@ -3,8 +3,6 @@ package com.users.api.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.List;
-
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -17,12 +15,14 @@ public class Address {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToMany(mappedBy = "address", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<UserDetails> userDetails;
-
     private String street;
     private String number;
     private String city;
     private String country;
+
+    @Column(unique = true)
     private String postCode;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private User user;
 }
