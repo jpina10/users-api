@@ -1,5 +1,6 @@
 package com.users.api.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.users.api.dto.UserDto;
 import com.users.api.exception.ResourceAlreadyExistsException;
 import com.users.api.exception.ResourceNotFoundException;
@@ -19,9 +20,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import javax.json.Json;
 import javax.json.JsonPatch;
+import javax.json.JsonStructure;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@ExtendWith({MockitoExtension.class})
+@ExtendWith({SpringExtension.class})
 class UserServiceImplTest {
     private static final String USERNAME = "username";
 
@@ -50,6 +53,8 @@ class UserServiceImplTest {
     private RandomUserApiClient randomUserApiClient;
     @Mock
     private AddressService addressService;
+    @Mock
+    private ObjectMapper objectMapper;
 
     @InjectMocks
     private UserServiceImpl userService;
@@ -115,11 +120,25 @@ class UserServiceImplTest {
 
     @Test
     void updateUser() {
-        User user = testFactory.getUser();
-        JsonPatch jsonPatch = mock(JsonPatch.class);
+        User originalUser = testFactory.getUser();
 
-        String username = user.getUsername();
-        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+        JsonPatch patch = Json.createPatchBuilder()
+                .replace("/firstName", "updated")
+                .build();
+
+        UserDto patchedUser = new UserDto();
+
+        JsonPatch jsonPatch = mock(JsonPatch.class);
+        JsonStructure jsonStructure = mock(JsonStructure.class);
+        JsonStructure patchResult = mock(JsonStructure.class);
+
+        when(jsonPatch.toJsonArray()).thenReturn(patch.toJsonArray());
+        when(objectMapper.convertValue(originalUser, JsonStructure.class)).thenReturn(jsonStructure);
+        when(jsonPatch.apply(jsonStructure)).thenReturn(patchResult);
+        when(objectMapper.convertValue(patchResult, UserDto.class)).thenReturn(patchedUser);
+
+        String username = originalUser.getUsername();
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(originalUser));
 
         userService.updateUser(username, jsonPatch);
 
