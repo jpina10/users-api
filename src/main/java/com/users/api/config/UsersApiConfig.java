@@ -1,8 +1,5 @@
 package com.users.api.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JSR310Module;
-import com.fasterxml.jackson.datatype.jsr353.JSR353Module;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
@@ -24,12 +21,5 @@ public class UsersApiConfig {
                         .summary("summary").version("v1"));
     }
 
-    @Bean
-    public ObjectMapper objectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JSR353Module());
-        objectMapper.registerModule(new JSR310Module());
 
-        return objectMapper;
-    }
 }
