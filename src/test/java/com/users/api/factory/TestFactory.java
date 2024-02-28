@@ -24,7 +24,6 @@ public class TestFactory {
         user.setFirstName("firstName");
         user.setLastName("lastName");
         user.setPhoneNumber("phoneNumber");
-        user.setAddresses(List.of(getAddress()));
         user.setMainAddressId(getAddress().getId());
 
         return user;
@@ -34,11 +33,11 @@ public class TestFactory {
         return RandomUserApiResponse.builder()
                 .error(null)
                 .results(List.of(Result.builder()
-                                .gender("gender")
-                                .name(getName())
-                                .location(getLocation())
-                                .email("email")
-                                .login(getLogin())
+                        .gender("gender")
+                        .name(getName())
+                        .location(getLocation())
+                        .email("email")
+                        .login(getLogin())
                         .build()))
                 .build();
     }
@@ -81,14 +80,15 @@ public class TestFactory {
                 .build();
     }
 
-    private Address getAddress() {
-        return Address.builder()
-                .id(1L)
-                .street("street")
-                .number("number")
-                .city("city")
-                .country("country")
-                .postCode("postcode")
-                .build();
+    public Address getAddress() {
+        Address address = new Address();
+        address.setId(1L);
+        address.setStreet("street");
+        address.setNumber("number");
+        address.setCity("city");
+        address.setCountry("country");
+        address.setPostCode("postcode");
+
+        return address;
     }
 }

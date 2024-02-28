@@ -5,13 +5,14 @@ import com.users.api.dto.UserDto;
 import com.users.api.exception.ResourceAlreadyExistsException;
 import com.users.api.exception.ResourceNotFoundException;
 import com.users.api.exception.ThirdPartyException;
+import com.users.api.mapper.AddressMapper;
 import com.users.api.mapper.RandomUserMapper;
 import com.users.api.mapper.UserMapper;
-import com.users.api.model.Address;
 import com.users.api.model.User;
 import com.users.api.nameapi.RandomUserApiResponse;
 import com.users.api.nameapi.api.RandomUserApiClient;
-import com.users.api.nameapi.model.Location;
+import com.users.api.nameapi.model.Result;
+import com.users.api.repository.AddressRepository;
 import com.users.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,11 +30,14 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final AddressRepository addressRepository;
+
     private final UserMapper userMapper;
     private final RandomUserMapper randomUserMapper;
-    private final RandomUserApiClient randomUserApiClient;
+    private final AddressMapper addressMapper;
     private final ObjectMapper objectMapper;
-    private final AddressService addressService;
+
+    private final RandomUserApiClient randomUserApiClient;
 
     @Override
     public UserDto findUserByUserName(String username) {
@@ -47,20 +51,21 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public String createRandomUser() {
         var response = callRandomUserApi();
-
         var userData = response.getResults().get(0);
-        var user = randomUserMapper.toUser(userData);
-        String username = user.getUsername();
 
-        existsUser(username);
+        existsUser(userData.getLogin().getUsername());
+
+        var user = randomUserMapper.toUser(userData);
+
+        setAddressSection(userData, user);
+
+        String username = user.getUsername();
 
         log.info("saving user with username {}", username);
         userRepository.save(user);
 
-        setUserAddress(user, userData.getLocation());
         return username;
     }
-
 
     @Override
     @Transactional
@@ -102,9 +107,12 @@ public class UserServiceImpl implements UserService {
         userRepository.save(patchedUser);
     }
 
-    private void setUserAddress(User user, Location location) {
-        Address address = addressService.createAddress(user, location);
-        user.setMainAddressId(address.getId());
+    private void setAddressSection(Result userData, User user) {
+        var address = addressMapper.toEntity(userData.getLocation());
+
+        addressRepository.save(address);
+
+        user.addAddress(address);
     }
 
     private User findUser(String username) {
