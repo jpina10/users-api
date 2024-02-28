@@ -6,13 +6,16 @@ import com.users.api.exception.ResourceAlreadyExistsException;
 import com.users.api.exception.ResourceNotFoundException;
 import com.users.api.exception.ThirdPartyException;
 import com.users.api.factory.TestFactory;
+import com.users.api.mapper.AddressMapper;
 import com.users.api.mapper.RandomUserMapper;
 import com.users.api.mapper.UserMapper;
+import com.users.api.model.Address;
 import com.users.api.model.User;
 import com.users.api.nameapi.RandomUserApiResponse;
 import com.users.api.nameapi.api.RandomUserApiClient;
 import com.users.api.nameapi.model.Location;
 import com.users.api.nameapi.model.Result;
+import com.users.api.repository.AddressRepository;
 import com.users.api.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,7 +55,9 @@ class UserServiceImplTest {
     @Mock
     private RandomUserApiClient randomUserApiClient;
     @Mock
-    private AddressService addressService;
+    private AddressMapper addressMapper;
+    @Mock
+    private AddressRepository addressRepository;
     @Mock
     private ObjectMapper objectMapper;
 
@@ -85,21 +90,27 @@ class UserServiceImplTest {
     @Test
     void createUserWithApiAvailableAndNotExistingUsername() {
         User user = testFactory.getUser();
+        Address address = testFactory.getAddress();
+
         RandomUserApiResponse randomUserApiResponse = testFactory.getRandomUserApiResponse();
         Result result = randomUserApiResponse.getResults().get(0);
 
         when(randomUserApiClient.getUserData()).thenReturn(randomUserApiResponse);
+        when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.empty());
         when(randomUserMapper.toUser(result)).thenReturn(user);
 
         Location location = result.getLocation();
-        when(addressService.createAddress(user, location)).thenReturn(user.getAddresses().get(0));
+        when(addressMapper.toEntity(location)).thenReturn(address);
+        when(addressRepository.save(address)).thenReturn(address);
 
         userService.createRandomUser();
 
         verify(randomUserApiClient).getUserData();
+        verify(userRepository).findByUsername(user.getUsername());
         verify(randomUserMapper).toUser(result);
+        verify(addressMapper).toEntity(location);
+        verify(addressRepository).save(address);
         verify(userRepository).save(user);
-        verify(addressService).createAddress(user, location);
     }
 
     @Test
@@ -115,7 +126,6 @@ class UserServiceImplTest {
         assertThrows(ResourceAlreadyExistsException.class, () -> userService.createRandomUser());
 
         verify(randomUserApiClient).getUserData();
-        verify(randomUserMapper).toUser(result);
     }
 
     @Test
@@ -154,6 +164,8 @@ class UserServiceImplTest {
         verify(randomUserApiClient).getUserData();
         verifyNoInteractions(randomUserMapper);
         verifyNoInteractions(userRepository);
+        verifyNoInteractions(addressMapper);
+        verifyNoInteractions(addressRepository);
     }
 
     @Test

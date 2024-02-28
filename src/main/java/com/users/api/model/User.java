@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -45,11 +46,29 @@ public class User {
     @Column(table = "user_details")
     private String phoneNumber;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<Address> addresses;
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(name = "user_address",
+            joinColumns = @JoinColumn(name = "address_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<Address> addresses = new ArrayList<>();
 
     private Long mainAddressId;
 
     @ManyToMany(mappedBy = "users")
     private List<Role> roles;
+
+    public void addAddress(Address address) {
+        if(addresses.isEmpty()) {
+            mainAddressId = address.getId();
+        }
+
+        addresses.add(address);
+        address.getUsers().add(this);
+    }
+
+    public void removeAddress(Address address) {
+        addresses.remove(address);
+        address.getUsers().remove(this);
+    }
 }
