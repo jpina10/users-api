@@ -1,5 +1,6 @@
 package com.users.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,6 +26,7 @@ public class Address {
     @Column(unique = true)
     private String postCode;
 
+    @JsonIgnore
     @ManyToMany(mappedBy = "addresses")
     private List<User> users = new ArrayList<>();
 }
