@@ -1,4 +1,4 @@
-package com.users.api.config.security;
+package com.users.api.security;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 

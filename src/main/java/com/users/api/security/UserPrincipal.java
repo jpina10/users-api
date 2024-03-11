@@ -1,4 +1,4 @@
-package com.users.api.config.security;
+package com.users.api.security;
 
 import com.users.api.model.User;
 import lombok.Getter;
@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
 
 @Getter
 public class UserPrincipal {
+    private static final String ROLE = "ROLE_";
+
     private final String username;
     private final String password;
     private final Collection<? extends GrantedAuthority> authorities;
@@ -19,7 +21,7 @@ public class UserPrincipal {
         this.password = user.getPassword();
 
         this.authorities = user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_".concat(role.getName())))
+                .map(role -> new SimpleGrantedAuthority(ROLE.concat(role.getName())))
                 .collect(Collectors.toList());
     }
 

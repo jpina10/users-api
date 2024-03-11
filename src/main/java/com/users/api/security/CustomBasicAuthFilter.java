@@ -1,5 +1,8 @@
-package com.users.api.config.security;
+package com.users.api.security;
 
+import com.users.api.exception.InputValidationException;
+import com.users.api.exception.PasswordMatchException;
+import com.users.api.exception.ResourceNotFoundException;
 import com.users.api.model.User;
 import com.users.api.repository.UserRepository;
 import jakarta.servlet.FilterChain;
@@ -17,47 +20,59 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Base64;
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
 public class CustomBasicAuthFilter extends OncePerRequestFilter {
 
     private static final String AUTHORIZATION = "Authorization";
-    public static final String BASIC = "Basic ";
+    private static final String BASIC = "Basic ";
+    private static final String INCORRECT_PASSWORD = "Incorrect password";
+    private static final String WRONG_USERNAME_OR_PASSWORD = "Wrong username or password";
 
     private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         if (isBasicAuthentication(request)) {
-            String[] credentials = decodeBase64(getHeader(request).replace(BASIC, "")).split(":");
-
+            String[] credentials = extractCredentials(request);
             String username = credentials[0];
             String password = credentials[1];
 
-            //need this because the user is passed to another method and since it's a lazy many to many the roles are not loaded
-            Optional<User> userOptional = userRepository.findByUsernameWithRoles(username);
-
-            if(userOptional.isEmpty()) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("User does not exist");
-                return;
-            }
-
-            User user = userOptional.get();
-
-            boolean valid = checkPassword(user.getPassword(), password);
-
-            if(!valid) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Incorrect password");
-            }
+            User user = getValidatedUser(username, password);
 
             setAuthentication(user);
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private User getValidatedUser(String username, String password) {
+        try {
+            User user = getUserByUsername(username);
+            validatePassword(user, password);
+
+            return user;
+        } catch (ResourceNotFoundException | PasswordMatchException e) {
+            throw new InputValidationException(WRONG_USERNAME_OR_PASSWORD);
+        }
+    }
+
+    private void validatePassword(User user, String password) {
+        if (!checkPassword(user.getPassword(), password)) {
+            throw new PasswordMatchException(INCORRECT_PASSWORD);
+        }
+    }
+
+    private User getUserByUsername(String username) {
+        return userRepository.findByUsernameWithRoles(username).orElseThrow(() -> new ResourceNotFoundException("User with username " + username + "does not exist."));
+    }
+
+    private String[] extractCredentials(HttpServletRequest request) {
+        String header = getHeader(request);
+        String base64Credentials = header.replace(BASIC, "");
+        String decodedCredentials = decodeBase64(base64Credentials);
+        return decodedCredentials.split(":");
     }
 
     private void setAuthentication(User user) {

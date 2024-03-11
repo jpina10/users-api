@@ -1,6 +1,6 @@
 package com.users.api.controller;
 
-import com.users.api.config.security.Secured;
+import com.users.api.security.Secured;
 import com.users.api.dto.CreateUserResponse;
 import com.users.api.dto.UserDto;
 import com.users.api.service.UserService;
