@@ -1,4 +1,4 @@
-package com.users.api.config;
+package com.users.api.config.security;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -29,6 +29,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers(antMatcher("/h2-console/**")).permitAll()
+                        .requestMatchers(antMatcher("/**")).permitAll()
                         .requestMatchers(antMatcher(HttpMethod.GET, "/api/v1/users/**")).permitAll()
                         .requestMatchers(antMatcher(HttpMethod.POST, "/api/v1/users/**")).permitAll()
                         .requestMatchers(antMatcher(HttpMethod.DELETE, "/api/v1/users")).hasRole("ADMIN")

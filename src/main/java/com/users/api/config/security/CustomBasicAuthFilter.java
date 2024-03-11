@@ -1,4 +1,4 @@
-package com.users.api.config;
+package com.users.api.config.security;
 
 import com.users.api.model.User;
 import com.users.api.repository.UserRepository;
