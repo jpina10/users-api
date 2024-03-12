@@ -84,6 +84,7 @@ public class UserServiceImpl implements UserService {
     public void deleteUser(String username) {
         User user = this.findUser(username);
 
+        log.debug("deleting user with username {}", user.getUsername());
         userRepository.delete(user);
     }
 
@@ -100,17 +101,19 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void updateUser(String username, JsonPatch jsonPatch) {
         User originalUser = this.findUser(username);
-        log.debug("original user  {}", originalUser);
+        log.debug("original user {}", originalUser);
 
         JsonStructure target = objectMapper.convertValue(originalUser, JsonStructure.class);
         JsonValue patched = jsonPatch.apply(target);
 
         var patchedUser = objectMapper.convertValue(patched, User.class);
 
+        log.debug("saving patched user {}", patchedUser);
         userRepository.save(patchedUser);
     }
 
     @Override
+    @Transactional
     public void createAdminUser() {
         User user = new User();
         user.setUsername("admin");
