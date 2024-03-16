@@ -9,9 +9,7 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@SecurityRequirement(name = "basic")
-@SecurityRequirement(name = "bearer")
-/*@SecurityRequirement(name = "Basic Authentication")
-@SecurityRequirement(name = "Bearer Authentication")*/
+@SecurityRequirement(name = "Basic Authentication")
+@SecurityRequirement(name = "Bearer Authentication")
 public @interface Secured {
 }

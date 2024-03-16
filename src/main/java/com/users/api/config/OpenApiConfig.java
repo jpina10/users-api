@@ -27,24 +27,6 @@ public class OpenApiConfig {
 
     private static SecurityScheme getBasicSecurityScheme() {
         SecurityScheme securitySchemeBasic = new SecurityScheme();
-        securitySchemeBasic.setName("basic");
-        securitySchemeBasic.scheme("basic");
-        securitySchemeBasic.type(SecurityScheme.Type.HTTP);
-        securitySchemeBasic.in(SecurityScheme.In.HEADER);
-        return securitySchemeBasic;
-    }
-
-    private static SecurityScheme getBearerSecurityScheme() {
-        SecurityScheme securitySchemeBearer = new SecurityScheme();
-        securitySchemeBearer.setName("bearer");
-        securitySchemeBearer.scheme("bearer");
-        securitySchemeBearer.type(SecurityScheme.Type.HTTP);
-        securitySchemeBearer.in(SecurityScheme.In.HEADER);
-        return securitySchemeBearer;
-    }
-
-/*    private static SecurityScheme getBasicSecurityScheme() {
-        SecurityScheme securitySchemeBasic = new SecurityScheme();
         securitySchemeBasic.setName("Basic Authentication");
         securitySchemeBasic.scheme("basic");
         securitySchemeBasic.type(SecurityScheme.Type.HTTP);
@@ -59,5 +41,5 @@ public class OpenApiConfig {
         securitySchemeBearer.type(SecurityScheme.Type.HTTP);
         securitySchemeBearer.in(SecurityScheme.In.HEADER);
         return securitySchemeBearer;
-    }*/
+    }
 }
