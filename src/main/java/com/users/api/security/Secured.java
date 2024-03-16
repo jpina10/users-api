@@ -11,5 +11,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @SecurityRequirement(name = "basic")
 @SecurityRequirement(name = "bearer")
+/*@SecurityRequirement(name = "Basic Authentication")
+@SecurityRequirement(name = "Bearer Authentication")*/
 public @interface Secured {
 }
