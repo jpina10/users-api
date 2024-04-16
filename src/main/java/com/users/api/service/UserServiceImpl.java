@@ -2,9 +2,9 @@ package com.users.api.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.users.api.dto.UserDto;
-import com.users.api.exception.ResourceAlreadyExistsException;
+import com.users.api.exception.model.ResourceAlreadyExistsException;
 import com.users.api.exception.ThirdPartyException;
-import com.users.api.exception.UserNotFoundException;
+import com.users.api.exception.model.UserNotFoundException;
 import com.users.api.mapper.AddressMapper;
 import com.users.api.mapper.RandomUserMapper;
 import com.users.api.mapper.UserMapper;

@@ -1,4 +1,4 @@
-package com.users.api.exception;
+package com.users.api.exception.model;
 
 public class UserNotFoundException extends ResourceNotFoundException{
 

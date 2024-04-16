@@ -2,8 +2,8 @@ package com.users.api.service;
 
 import com.users.api.dto.AddressDto;
 import com.users.api.dto.CreateAddressDto;
-import com.users.api.exception.AddressNotFoundException;
-import com.users.api.exception.ResourceAlreadyExistsException;
+import com.users.api.exception.model.AddressNotFoundException;
+import com.users.api.exception.model.ResourceAlreadyExistsException;
 import com.users.api.mapper.AddressMapper;
 import com.users.api.model.Address;
 import com.users.api.repository.AddressRepository;
