@@ -8,11 +8,13 @@ import com.users.api.exception.ThirdPartyException;
 import com.users.api.mapper.AddressMapper;
 import com.users.api.mapper.RandomUserMapper;
 import com.users.api.mapper.UserMapper;
+import com.users.api.model.Role;
 import com.users.api.model.User;
 import com.users.api.nameapi.RandomUserApiResponse;
 import com.users.api.nameapi.api.RandomUserApiClient;
 import com.users.api.nameapi.model.Result;
 import com.users.api.repository.AddressRepository;
+import com.users.api.repository.RoleRepository;
 import com.users.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +33,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final AddressRepository addressRepository;
+    private final RoleRepository roleRepository;
 
     private final UserMapper userMapper;
     private final RandomUserMapper randomUserMapper;
@@ -81,6 +84,7 @@ public class UserServiceImpl implements UserService {
     public void deleteUser(String username) {
         User user = this.findUser(username);
 
+        log.debug("deleting user with username {}", user.getUsername());
         userRepository.delete(user);
     }
 
@@ -97,14 +101,31 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void updateUser(String username, JsonPatch jsonPatch) {
         User originalUser = this.findUser(username);
-        log.debug("original user  {}", originalUser);
+        log.debug("original user {}", originalUser);
 
         JsonStructure target = objectMapper.convertValue(originalUser, JsonStructure.class);
         JsonValue patched = jsonPatch.apply(target);
 
         var patchedUser = objectMapper.convertValue(patched, User.class);
 
+        log.debug("saving patched user {}", patchedUser);
         userRepository.save(patchedUser);
+    }
+
+    @Override
+    @Transactional
+    public void createAdminUser() {
+        User user = new User();
+        user.setUsername("admin");
+        user.setPassword("admin");
+
+        Role role = new Role();
+        role.setName("ADMIN");
+
+        role.setUsers(List.of(user));
+        roleRepository.save(role);
+
+        userRepository.save(user);
     }
 
     private void setAddressSection(Result userData, User user) {

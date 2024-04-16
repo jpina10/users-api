@@ -17,4 +17,6 @@ public interface UserService {
     List<UserDto> getAllUsers();
 
     void updateUser(String username, JsonPatch jsonPatch);
+
+    void createAdminUser();
 }

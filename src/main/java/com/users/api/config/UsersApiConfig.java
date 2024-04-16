@@ -1,9 +1,8 @@
 package com.users.api.config;
 
-import io.swagger.v3.oas.models.Components;
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.security.SecurityScheme;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JSR310Module;
+import com.fasterxml.jackson.datatype.jsr353.JSR353Module;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -11,15 +10,11 @@ import org.springframework.context.annotation.Configuration;
 public class UsersApiConfig {
 
     @Bean
-    public OpenAPI customOpenAPI() {
-        return new OpenAPI()
-                .components(new Components()
-                        .addSecuritySchemes("Basic authentication", new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("basic")))
-                .info(new Info()
-                        .title("Users API")
-                        .description("CRUD API for users")
-                        .summary("summary").version("v1"));
+    public ObjectMapper objectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JSR353Module());
+        objectMapper.registerModule(new JSR310Module());
+
+        return objectMapper;
     }
-
-
 }
