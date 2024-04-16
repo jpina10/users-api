@@ -3,6 +3,7 @@ package com.users.api.security;
 import com.users.api.exception.InputValidationException;
 import com.users.api.exception.PasswordMatchException;
 import com.users.api.exception.ResourceNotFoundException;
+import com.users.api.exception.UserNotFoundException;
 import com.users.api.model.User;
 import com.users.api.repository.UserRepository;
 import jakarta.servlet.FilterChain;
@@ -65,7 +66,8 @@ public class CustomBasicAuthFilter extends OncePerRequestFilter {
     }
 
     private User getUserByUsername(String username) {
-        return userRepository.findByUsernameWithRoles(username).orElseThrow(() -> new ResourceNotFoundException("User with username " + username + "does not exist."));
+        return userRepository.findByUsernameWithRoles(username)
+                .orElseThrow(() -> new UserNotFoundException(username));
     }
 
     private String[] extractCredentials(HttpServletRequest request) {
