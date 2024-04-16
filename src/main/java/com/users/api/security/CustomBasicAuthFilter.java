@@ -2,7 +2,7 @@ package com.users.api.security;
 
 import com.users.api.exception.InputValidationException;
 import com.users.api.exception.PasswordMatchException;
-import com.users.api.exception.ResourceNotFoundException;
+import com.users.api.exception.model.UserNotFoundException;
 import com.users.api.model.User;
 import com.users.api.repository.UserRepository;
 import jakarta.servlet.FilterChain;
@@ -29,6 +29,8 @@ public class CustomBasicAuthFilter extends OncePerRequestFilter {
     private static final String BASIC = "Basic ";
     private static final String INCORRECT_PASSWORD = "Incorrect password";
     private static final String WRONG_USERNAME_OR_PASSWORD = "Wrong username or password";
+    private static final String EMPTY_STRING = "";
+    private static final String DOUBLE_DOTS = ":";
 
     private final UserRepository userRepository;
 
@@ -53,7 +55,7 @@ public class CustomBasicAuthFilter extends OncePerRequestFilter {
             validatePassword(user, password);
 
             return user;
-        } catch (ResourceNotFoundException | PasswordMatchException e) {
+        } catch (UserNotFoundException | PasswordMatchException e) {
             throw new InputValidationException(WRONG_USERNAME_OR_PASSWORD);
         }
     }
@@ -65,14 +67,15 @@ public class CustomBasicAuthFilter extends OncePerRequestFilter {
     }
 
     private User getUserByUsername(String username) {
-        return userRepository.findByUsernameWithRoles(username).orElseThrow(() -> new ResourceNotFoundException("User with username " + username + "does not exist."));
+        return userRepository.findByUsernameWithRoles(username)
+                .orElseThrow(() -> new UserNotFoundException(username));
     }
 
     private String[] extractCredentials(HttpServletRequest request) {
         String header = getHeader(request);
-        String base64Credentials = header.replace(BASIC, "");
+        String base64Credentials = header.replace(BASIC, EMPTY_STRING);
         String decodedCredentials = decodeBase64(base64Credentials);
-        return decodedCredentials.split(":");
+        return decodedCredentials.split(DOUBLE_DOTS);
     }
 
     private void setAuthentication(User user) {

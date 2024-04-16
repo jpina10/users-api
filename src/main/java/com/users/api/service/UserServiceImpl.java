@@ -2,9 +2,9 @@ package com.users.api.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.users.api.dto.UserDto;
-import com.users.api.exception.ResourceAlreadyExistsException;
-import com.users.api.exception.ResourceNotFoundException;
+import com.users.api.exception.model.ResourceAlreadyExistsException;
 import com.users.api.exception.ThirdPartyException;
+import com.users.api.exception.model.UserNotFoundException;
 import com.users.api.mapper.AddressMapper;
 import com.users.api.mapper.RandomUserMapper;
 import com.users.api.mapper.UserMapper;
@@ -47,7 +47,7 @@ public class UserServiceImpl implements UserService {
         log.info("Retrieving user with username: {}", username);
         return userRepository.findByUsername(username)
                 .map(userMapper::toDto)
-                .orElseThrow(() -> new ResourceNotFoundException("user with username " + username + " does not exist."));
+                .orElseThrow(() -> new UserNotFoundException(username));
     }
 
     @Override
@@ -138,7 +138,7 @@ public class UserServiceImpl implements UserService {
 
     private User findUser(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("user with username" + username + " does not exist."));
+                .orElseThrow(() -> new UserNotFoundException(username));
     }
 
     private RandomUserApiResponse callRandomUserApi() {
