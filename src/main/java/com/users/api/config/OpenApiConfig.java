@@ -13,12 +13,10 @@ public class OpenApiConfig {
     @Bean
     public OpenAPI customOpenAPI() {
         SecurityScheme securitySchemeBasic = getBasicSecurityScheme();
-        SecurityScheme securitySchemeBearer = getBearerSecurityScheme();
 
         return new OpenAPI()
                 .components(new Components()
-                        .addSecuritySchemes(securitySchemeBasic.getName(), securitySchemeBasic)
-                        .addSecuritySchemes(securitySchemeBearer.getName(), securitySchemeBearer))
+                        .addSecuritySchemes(securitySchemeBasic.getName(), securitySchemeBasic))
                 .info(new Info()
                         .title("Users API")
                         .description("CRUD API for users")
@@ -32,14 +30,5 @@ public class OpenApiConfig {
         securitySchemeBasic.type(SecurityScheme.Type.HTTP);
         securitySchemeBasic.in(SecurityScheme.In.HEADER);
         return securitySchemeBasic;
-    }
-
-    private static SecurityScheme getBearerSecurityScheme() {
-        SecurityScheme securitySchemeBearer = new SecurityScheme();
-        securitySchemeBearer.setName("Bearer Authentication");
-        securitySchemeBearer.scheme("bearer");
-        securitySchemeBearer.type(SecurityScheme.Type.HTTP);
-        securitySchemeBearer.in(SecurityScheme.In.HEADER);
-        return securitySchemeBearer;
     }
 }
