@@ -71,9 +71,4 @@ public class UserController {
     public void updateUser(@Parameter(name = "username") @PathVariable String username, @RequestBody JsonPatch jsonPatch) {
         userService.updateUser(username, jsonPatch);
     }
-
-    @PostMapping("/admin")
-    public void createAdminUser() {
-        userService.createAdminUser();
-    }
 }
