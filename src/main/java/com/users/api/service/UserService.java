@@ -1,6 +1,7 @@
 package com.users.api.service;
 
 import com.users.api.dto.UserDto;
+import org.springframework.data.domain.Pageable;
 
 import javax.json.JsonPatch;
 import java.util.List;
@@ -14,7 +15,7 @@ public interface UserService {
 
     void deleteUser(String username);
 
-    List<UserDto> getAllUsers();
+    List<UserDto> getAllUsers(Pageable pageable);
 
     void updateUser(String username, JsonPatch jsonPatch);
 }

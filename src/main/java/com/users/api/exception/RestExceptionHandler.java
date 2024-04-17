@@ -5,7 +5,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @ControllerAdvice
@@ -16,13 +15,5 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         RestErrorMessage restErrorMessage = new RestErrorMessage(HttpStatus.NOT_FOUND, exception.getMessage());
 
         return new ResponseEntity<>(restErrorMessage, HttpStatus.NOT_FOUND);
-    }
-
-    @ExceptionHandler(InputValidationException.class)
-    @ResponseBody
-    public ResponseEntity<RestErrorMessage> handleAuthenticationException(Exception ex) {
-
-        RestErrorMessage restErrorMessage = new RestErrorMessage(HttpStatus.UNAUTHORIZED, ex.getMessage());
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(restErrorMessage);
     }
 }

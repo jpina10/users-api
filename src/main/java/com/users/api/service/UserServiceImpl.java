@@ -17,7 +17,7 @@ import com.users.api.repository.AddressRepository;
 import com.users.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -93,8 +93,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserDto> getAllUsers() {
-        List<User> users = userRepository.findAll();
+    public List<UserDto> getAllUsers(Pageable pageable) {
+        var users = userRepository.findAll(pageable);
 
         return users.stream()
                 .map(userMapper::toDto)

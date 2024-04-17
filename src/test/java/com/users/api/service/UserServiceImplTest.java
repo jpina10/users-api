@@ -23,6 +23,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.json.Json;
@@ -198,13 +201,15 @@ class UserServiceImplTest {
     void getAllUsers() {
         User user = testFactory.getUser();
         List<User> users = List.of(user);
+        Pageable pageable = PageRequest.of(0, 20);
+        PageImpl<User> userPage = new PageImpl<>(users, pageable, users.size());
 
-        when(userRepository.findAll()).thenReturn(users);
+        when(userRepository.findAll(pageable)).thenReturn(userPage);
 
-        List<UserDto> allUsers = userService.getAllUsers();
+        List<UserDto> allUsers = userService.getAllUsers(pageable);
 
         assertThat(allUsers).hasSameSizeAs(users);
 
-        verify(userRepository).findAll();
+        verify(userRepository).findAll(pageable);
     }
 }
