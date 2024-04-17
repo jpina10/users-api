@@ -21,7 +21,7 @@ public class UserPrincipal {
         this.password = user.getPassword();
 
         this.authorities = user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority(ROLE.concat(role.getName())))
+                .map(role -> new SimpleGrantedAuthority(ROLE.concat(role.name())))
                 .collect(Collectors.toList());
     }
 

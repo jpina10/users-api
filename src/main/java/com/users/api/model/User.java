@@ -8,7 +8,9 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -55,8 +57,15 @@ public class User {
 
     private Long mainAddressId;
 
-    @ManyToMany(mappedBy = "users")
-    private List<Role> roles;
+    @ElementCollection(targetClass = Role.class)
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role")
+    private Set<Role> roles= new HashSet<>();
+
+    public void addRole(Role role) {
+        roles.add(role);
+    }
 
     public void addAddress(Address address) {
         if(addresses.isEmpty()) {
