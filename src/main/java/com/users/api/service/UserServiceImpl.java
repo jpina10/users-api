@@ -8,6 +8,7 @@ import com.users.api.exception.model.UserNotFoundException;
 import com.users.api.mapper.AddressMapper;
 import com.users.api.mapper.RandomUserMapper;
 import com.users.api.mapper.UserMapper;
+import com.users.api.model.Role;
 import com.users.api.model.User;
 import com.users.api.nameapi.RandomUserApiResponse;
 import com.users.api.nameapi.api.RandomUserApiClient;
@@ -16,6 +17,7 @@ import com.users.api.repository.AddressRepository;
 import com.users.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,6 +60,7 @@ public class UserServiceImpl implements UserService {
         var user = randomUserMapper.toUser(userData);
 
         setAddressSection(userData, user);
+        setDefaultRole(user);
 
         String username = user.getUsername();
 
@@ -65,6 +68,10 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
         return username;
+    }
+
+    private void setDefaultRole(User user) {
+        user.addRole(Role.USER);
     }
 
     @Override
