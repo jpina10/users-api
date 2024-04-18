@@ -1,7 +1,9 @@
 package com.users.api.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.users.api.dto.UserCriteriaSpecification;
 import com.users.api.dto.UserDto;
+import com.users.api.dto.UserSearchCriteriaDto;
 import com.users.api.exception.ThirdPartyException;
 import com.users.api.exception.model.ResourceAlreadyExistsException;
 import com.users.api.exception.model.UserNotFoundException;
@@ -17,7 +19,10 @@ import com.users.api.repository.AddressRepository;
 import com.users.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,11 +47,39 @@ public class UserServiceImpl implements UserService {
     private final RandomUserApiClient randomUserApiClient;
 
     @Override
+    public List<UserDto> findAllUsers(Pageable pageable) {
+        var users = userRepository.findAll(pageable);
+
+        return users.map(userMapper::toDto).toList();
+    }
+
+    @Override
     public UserDto findUserByUserName(String username) {
         log.info("Retrieving user with username: {}", username);
         return userRepository.findByUsername(username)
                 .map(userMapper::toDto)
                 .orElseThrow(() -> new UserNotFoundException(username));
+    }
+
+    @Override
+    public List<UserDto> findUsersByCriteria(UserSearchCriteriaDto searchCriteria, Pageable pageable) {
+        Specification<User> spec = Specification.where(null);
+
+        if (StringUtils.isNotEmpty(searchCriteria.getUsername())) {
+            spec = spec.and(UserCriteriaSpecification.hasUsername(searchCriteria.getUsername()));
+        }
+
+        if (StringUtils.isNotEmpty(searchCriteria.getFirstName())) {
+            spec = spec.and(UserCriteriaSpecification.hasFirstName(searchCriteria.getFirstName()));
+        }
+
+        if (StringUtils.isNotEmpty(searchCriteria.getLastName())) {
+            spec = spec.and(UserCriteriaSpecification.hasLastName(searchCriteria.getLastName()));
+        }
+
+        Page<User> userPage = userRepository.findAll(spec, pageable);
+
+        return userPage.map(userMapper::toDto).toList();
     }
 
     @Override
@@ -70,41 +103,19 @@ public class UserServiceImpl implements UserService {
         return username;
     }
 
-    private void setDefaultRole(User user) {
-        user.addRole(Role.USER);
-    }
-
-    @Override
-    @Transactional
-    public void enableUser(String username) {
-        var user = this.findUser(username);
-
-        user.setEnabled(true);
-        userRepository.save(user);
-    }
-
     @Override
     @Transactional
     public void deleteUser(String username) {
-        User user = this.findUser(username);
+        User user = this.getUser(username);
 
         log.debug("deleting user with username {}", user.getUsername());
         userRepository.delete(user);
     }
 
     @Override
-    public List<UserDto> getAllUsers(Pageable pageable) {
-        var users = userRepository.findAll(pageable);
-
-        return users.stream()
-                .map(userMapper::toDto)
-                .toList();
-    }
-
-    @Override
     @Transactional
     public void updateUser(String username, JsonPatch jsonPatch) {
-        User originalUser = this.findUser(username);
+        User originalUser = this.getUser(username);
         log.debug("original user {}", originalUser);
 
         JsonStructure target = objectMapper.convertValue(originalUser, JsonStructure.class);
@@ -116,6 +127,19 @@ public class UserServiceImpl implements UserService {
         userRepository.save(patchedUser);
     }
 
+    @Override
+    @Transactional
+    public void enableUser(String username) {
+        var user = this.getUser(username);
+
+        user.setEnabled(true);
+        userRepository.save(user);
+    }
+
+    private void setDefaultRole(User user) {
+        user.addRole(Role.USER);
+    }
+
     private void setAddressSection(Result userData, User user) {
         var address = addressMapper.toEntity(userData.getLocation());
 
@@ -124,7 +148,7 @@ public class UserServiceImpl implements UserService {
         user.addAddress(address);
     }
 
-    private User findUser(String username) {
+    private User getUser(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException(username));
     }
