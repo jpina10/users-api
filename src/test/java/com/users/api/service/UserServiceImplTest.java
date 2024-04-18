@@ -2,17 +2,20 @@ package com.users.api.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.users.api.dto.UserDto;
-import com.users.api.exception.ResourceAlreadyExistsException;
-import com.users.api.exception.ResourceNotFoundException;
 import com.users.api.exception.ThirdPartyException;
+import com.users.api.exception.model.ResourceAlreadyExistsException;
+import com.users.api.exception.model.ResourceNotFoundException;
 import com.users.api.factory.TestFactory;
+import com.users.api.mapper.AddressMapper;
 import com.users.api.mapper.RandomUserMapper;
 import com.users.api.mapper.UserMapper;
+import com.users.api.model.Address;
 import com.users.api.model.User;
 import com.users.api.nameapi.RandomUserApiResponse;
 import com.users.api.nameapi.api.RandomUserApiClient;
 import com.users.api.nameapi.model.Location;
 import com.users.api.nameapi.model.Result;
+import com.users.api.repository.AddressRepository;
 import com.users.api.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,6 +23,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.json.Json;
@@ -32,7 +38,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 @ExtendWith({SpringExtension.class})
 class UserServiceImplTest {
@@ -52,7 +61,9 @@ class UserServiceImplTest {
     @Mock
     private RandomUserApiClient randomUserApiClient;
     @Mock
-    private AddressService addressService;
+    private AddressMapper addressMapper;
+    @Mock
+    private AddressRepository addressRepository;
     @Mock
     private ObjectMapper objectMapper;
 
@@ -85,21 +96,27 @@ class UserServiceImplTest {
     @Test
     void createUserWithApiAvailableAndNotExistingUsername() {
         User user = testFactory.getUser();
+        Address address = testFactory.getAddress();
+
         RandomUserApiResponse randomUserApiResponse = testFactory.getRandomUserApiResponse();
         Result result = randomUserApiResponse.getResults().get(0);
 
         when(randomUserApiClient.getUserData()).thenReturn(randomUserApiResponse);
+        when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.empty());
         when(randomUserMapper.toUser(result)).thenReturn(user);
 
         Location location = result.getLocation();
-        when(addressService.createAddress(user, location)).thenReturn(user.getAddresses().get(0));
+        when(addressMapper.toEntity(location)).thenReturn(address);
+        when(addressRepository.save(address)).thenReturn(address);
 
         userService.createRandomUser();
 
         verify(randomUserApiClient).getUserData();
+        verify(userRepository).findByUsername(user.getUsername());
         verify(randomUserMapper).toUser(result);
+        verify(addressMapper).toEntity(location);
+        verify(addressRepository).save(address);
         verify(userRepository).save(user);
-        verify(addressService).createAddress(user, location);
     }
 
     @Test
@@ -115,7 +132,6 @@ class UserServiceImplTest {
         assertThrows(ResourceAlreadyExistsException.class, () -> userService.createRandomUser());
 
         verify(randomUserApiClient).getUserData();
-        verify(randomUserMapper).toUser(result);
     }
 
     @Test
@@ -154,6 +170,8 @@ class UserServiceImplTest {
         verify(randomUserApiClient).getUserData();
         verifyNoInteractions(randomUserMapper);
         verifyNoInteractions(userRepository);
+        verifyNoInteractions(addressMapper);
+        verifyNoInteractions(addressRepository);
     }
 
     @Test
@@ -186,13 +204,15 @@ class UserServiceImplTest {
     void getAllUsers() {
         User user = testFactory.getUser();
         List<User> users = List.of(user);
+        Pageable pageable = PageRequest.of(0, 20);
+        PageImpl<User> userPage = new PageImpl<>(users, pageable, users.size());
 
-        when(userRepository.findAll()).thenReturn(users);
+        when(userRepository.findAll(pageable)).thenReturn(userPage);
 
-        List<UserDto> allUsers = userService.getAllUsers();
+        List<UserDto> allUsers = userService.findAllUsers(pageable);
 
         assertThat(allUsers).hasSameSizeAs(users);
 
-        verify(userRepository).findAll();
+        verify(userRepository).findAll(pageable);
     }
 }

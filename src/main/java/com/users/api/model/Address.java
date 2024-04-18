@@ -1,9 +1,12 @@
 package com.users.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
-@Builder
+import java.util.ArrayList;
+import java.util.List;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -23,6 +26,7 @@ public class Address {
     @Column(unique = true)
     private String postCode;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private User user;
+    @JsonIgnore
+    @ManyToMany(mappedBy = "addresses")
+    private List<User> users = new ArrayList<>();
 }

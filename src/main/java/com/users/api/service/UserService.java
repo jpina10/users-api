@@ -1,6 +1,8 @@
 package com.users.api.service;
 
 import com.users.api.dto.UserDto;
+import com.users.api.dto.UserSearchCriteriaDto;
+import org.springframework.data.domain.Pageable;
 
 import javax.json.JsonPatch;
 import java.util.List;
@@ -14,7 +16,9 @@ public interface UserService {
 
     void deleteUser(String username);
 
-    List<UserDto> getAllUsers();
+    List<UserDto> findAllUsers(Pageable pageable);
 
     void updateUser(String username, JsonPatch jsonPatch);
+
+    List<UserDto> findUsersByCriteria(UserSearchCriteriaDto searchCriteria, Pageable pageable);
 }

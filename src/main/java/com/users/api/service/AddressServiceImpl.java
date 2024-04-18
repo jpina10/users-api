@@ -1,10 +1,11 @@
 package com.users.api.service;
 
-import com.users.api.exception.ResourceAlreadyExistsException;
+import com.users.api.dto.AddressDto;
+import com.users.api.dto.CreateAddressDto;
+import com.users.api.exception.model.AddressNotFoundException;
+import com.users.api.exception.model.ResourceAlreadyExistsException;
 import com.users.api.mapper.AddressMapper;
 import com.users.api.model.Address;
-import com.users.api.model.User;
-import com.users.api.nameapi.model.Location;
 import com.users.api.repository.AddressRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,14 +20,22 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     @Transactional
-    public Address createAddress(User user, Location location) {
-        findAddress(location.getPostCode());
+    public AddressDto createAddress(CreateAddressDto createAddressDto) {
+        findAddress(createAddressDto.getPostCode());
 
-        Address address = addressMapper.toEntity(location);
-        address.setUser(user);
+        Address address = addressMapper.toEntity(createAddressDto);
         addressRepository.save(address);
 
-        return address;
+        return addressMapper.toDto(address);
+    }
+
+    @Override
+    @Transactional
+    public void removeAddress(Long id) {
+        Address address = addressRepository.findById(id)
+                .orElseThrow(() -> new AddressNotFoundException(id.toString()));
+
+        addressRepository.delete(address);
     }
 
     private void findAddress(String postCode) {
