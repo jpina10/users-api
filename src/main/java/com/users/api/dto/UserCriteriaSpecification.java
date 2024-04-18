@@ -10,18 +10,8 @@ public class UserCriteriaSpecification {
 
     //use of like to be able to do partial search
     //use of lower to do ignore case
-    public static Specification<User> hasFirstName(String firstName) {
+    public static Specification<User> addField(String field, String value) {
         return (root, query, criteriaBuilder) ->
-                criteriaBuilder.like(criteriaBuilder.lower(root.get("firstName")), "%" + firstName.toLowerCase() + "%");
-    }
-
-    public static Specification<User> hasLastName(String lastName) {
-        return (root, query, criteriaBuilder) ->
-                criteriaBuilder.like(criteriaBuilder.lower(root.get("lastName")), "%" + lastName.toLowerCase() + "%");
-    }
-
-    public static Specification<User> hasUsername(String username) {
-        return (root, query, criteriaBuilder) ->
-                criteriaBuilder.like(criteriaBuilder.lower(root.get("username")), "%" + username.toLowerCase() + "%");
+                criteriaBuilder.like(criteriaBuilder.lower(root.get(field)), "%" + value.toLowerCase() + "%");
     }
 }

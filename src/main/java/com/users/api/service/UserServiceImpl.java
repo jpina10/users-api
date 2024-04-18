@@ -19,7 +19,6 @@ import com.users.api.repository.AddressRepository;
 import com.users.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -29,7 +28,9 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.json.JsonPatch;
 import javax.json.JsonStructure;
 import javax.json.JsonValue;
+import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -63,21 +64,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDto> findUsersByCriteria(UserSearchCriteriaDto searchCriteria, Pageable pageable) {
-        Specification<User> spec = Specification.where(null);
+        var specification = ifSearchingByFieldAddToSpecification(searchCriteria);
 
-        if (StringUtils.isNotEmpty(searchCriteria.getUsername())) {
-            spec = spec.and(UserCriteriaSpecification.hasUsername(searchCriteria.getUsername()));
-        }
-
-        if (StringUtils.isNotEmpty(searchCriteria.getFirstName())) {
-            spec = spec.and(UserCriteriaSpecification.hasFirstName(searchCriteria.getFirstName()));
-        }
-
-        if (StringUtils.isNotEmpty(searchCriteria.getLastName())) {
-            spec = spec.and(UserCriteriaSpecification.hasLastName(searchCriteria.getLastName()));
-        }
-
-        Page<User> userPage = userRepository.findAll(spec, pageable);
+        Page<User> userPage = userRepository.findAll(specification, pageable);
 
         return userPage.map(userMapper::toDto).toList();
     }
@@ -181,5 +170,24 @@ public class UserServiceImpl implements UserService {
         userRepository.findByUsername(username).ifPresent(user1 -> {
             throw new ResourceAlreadyExistsException("The user with username " + username + " already exists.");
         });
+    }
+
+    private Specification<User> ifSearchingByFieldAddToSpecification(UserSearchCriteriaDto userSearchCriteriaDto) {
+        var fields = userSearchCriteriaDto.getClass().getDeclaredFields();
+
+        Specification<User> spec = Specification.where(null);
+
+        for (Field field : fields) {
+            try {
+                field.setAccessible(true);
+                if (Objects.nonNull(field.get(userSearchCriteriaDto))) {
+                    spec = spec.and(UserCriteriaSpecification.addField(field.getName(), field.get(userSearchCriteriaDto).toString()));
+                }
+            } catch (IllegalAccessException exception) {
+                throw new RuntimeException("Cannot access the field " + field.getName());
+            }
+        }
+
+        return spec;
     }
 }
