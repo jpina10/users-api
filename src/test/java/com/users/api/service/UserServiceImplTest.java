@@ -2,9 +2,9 @@ package com.users.api.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.users.api.dto.UserDto;
+import com.users.api.exception.ThirdPartyException;
 import com.users.api.exception.model.ResourceAlreadyExistsException;
 import com.users.api.exception.model.ResourceNotFoundException;
-import com.users.api.exception.ThirdPartyException;
 import com.users.api.factory.TestFactory;
 import com.users.api.mapper.AddressMapper;
 import com.users.api.mapper.RandomUserMapper;
@@ -38,7 +38,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 @ExtendWith({SpringExtension.class})
 class UserServiceImplTest {
@@ -206,7 +209,7 @@ class UserServiceImplTest {
 
         when(userRepository.findAll(pageable)).thenReturn(userPage);
 
-        List<UserDto> allUsers = userService.getAllUsers(pageable);
+        List<UserDto> allUsers = userService.findAllUsers(pageable);
 
         assertThat(allUsers).hasSameSizeAs(users);
 
