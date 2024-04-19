@@ -1,4 +1,8 @@
 package com.users.api.dto;
 
-public record CreateUserResponse (String username){
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(name = "UserResponse")
+public record CreateUserResponse(
+        @Schema(description = "username of the user", example = "sadladybug779") String username) {
 }
