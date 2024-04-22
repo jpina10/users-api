@@ -1,5 +1,6 @@
 package com.users.api.service;
 
+import com.users.api.dto.CreateUserDto;
 import com.users.api.dto.UserDto;
 import com.users.api.dto.UserSearchCriteriaDto;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +12,8 @@ public interface UserService {
     UserDto findUserByUserName(String username);
 
     String createRandomUser();
+
+    UserDto createUser(CreateUserDto createUserDto);
 
     void enableUser(String username);
 

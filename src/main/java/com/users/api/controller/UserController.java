@@ -1,5 +1,6 @@
 package com.users.api.controller;
 
+import com.users.api.dto.CreateUserDto;
 import com.users.api.dto.CreateUserResponse;
 import com.users.api.dto.UserDto;
 import com.users.api.dto.UserSearchCriteriaDto;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
@@ -58,8 +60,19 @@ public class UserController {
         return userService.findUsersByCriteria(searchCriteria, pageable);
     }
 
-    @Operation(summary = "Creates a User calling a 3rd party API")
+    @Operation(summary = "Creates a User")
     @PostMapping
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "The User has been created"),
+    })
+    public ResponseEntity<CreateUserResponse> createUser(@Valid @RequestBody CreateUserDto createUserDto) {
+        String username = userService.createUser(createUserDto).getUsername();
+
+        return new ResponseEntity<>(new CreateUserResponse(username), HttpStatus.CREATED);
+    }
+
+    @Operation(summary = "Creates a User calling a 3rd party API")
+    @PostMapping("/random")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "The User has been created"),
             @ApiResponse(responseCode = "503", description = "Random user API not available")

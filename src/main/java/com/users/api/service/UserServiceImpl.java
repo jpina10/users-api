@@ -1,6 +1,7 @@
 package com.users.api.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.users.api.dto.CreateUserDto;
 import com.users.api.dto.UserCriteriaSpecification;
 import com.users.api.dto.UserDto;
 import com.users.api.dto.UserSearchCriteriaDto;
@@ -69,6 +70,15 @@ public class UserServiceImpl implements UserService {
         Page<User> userPage = userRepository.findAll(specification, pageable);
 
         return userPage.map(userMapper::toDto).toList();
+    }
+
+    @Override
+    @Transactional
+    public UserDto createUser(CreateUserDto createUserDto) {
+/*        Guard.guard(createUserDto).againstNull(ValidationMessages.CREATE_USER_EMPTY);
+        Guard.guard(createUserDto.getUsername()).againstNullOrWhitespace(ValidationMessages.USERNAME_NAME_EMPTY);*/
+
+        return new UserDto();
     }
 
     @Override
