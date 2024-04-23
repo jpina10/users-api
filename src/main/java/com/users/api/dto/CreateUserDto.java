@@ -1,9 +1,8 @@
 package com.users.api.dto;
 
-import com.users.api.util.ValidationMessages;
+import com.users.api.util.validator.password.ValidPassword;
+import com.users.api.util.validator.ValidationMessages;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,11 +13,9 @@ import lombok.NoArgsConstructor;
 @Data
 public class CreateUserDto {
 
-    @NotNull(message = ValidationMessages.CANNOT_BE_NULL)
-    @NotEmpty(message = ValidationMessages.CANNOT_BE_EMPTY)
-    @NotBlank(message = ValidationMessages.CANNOT_BE_BLANK)
     private String username;
 
+    @ValidPassword
     private String password;
 
     private String firstName;

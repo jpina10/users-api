@@ -75,9 +75,6 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserDto createUser(CreateUserDto createUserDto) {
-/*        Guard.guard(createUserDto).againstNull(ValidationMessages.CREATE_USER_EMPTY);
-        Guard.guard(createUserDto.getUsername()).againstNullOrWhitespace(ValidationMessages.USERNAME_NAME_EMPTY);*/
-
         return new UserDto();
     }
 

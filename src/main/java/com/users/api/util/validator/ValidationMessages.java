@@ -1,4 +1,4 @@
-package com.users.api.util;
+package com.users.api.util.validator;
 
 import lombok.experimental.UtilityClass;
 
