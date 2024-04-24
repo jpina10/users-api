@@ -14,8 +14,8 @@ public class Guard {
         return new PasswordGuard(new PasswordText(value));
     }
 
-    public static TextGuard guardText(String value) {
-        return new TextGuard(new Text(value));
+    public static TextGuard guard(Text value) {
+        return new TextGuard(value);
     }
 
     public static ObjectGuard guard(Object value) {
