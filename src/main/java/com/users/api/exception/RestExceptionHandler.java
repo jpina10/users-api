@@ -25,7 +25,7 @@ public class RestExceptionHandler {
 
     @ExceptionHandler(ValidationException.class)
     private ResponseEntity<RestErrorMessage> invalidInputHandler(ValidationException exception) {
-        RestErrorMessage restErrorMessage = new RestErrorMessage(HttpStatus.NOT_FOUND, exception.getMessage());
+        RestErrorMessage restErrorMessage = new RestErrorMessage(HttpStatus.BAD_REQUEST, exception.getMessage());
 
         return new ResponseEntity<>(restErrorMessage, HttpStatus.BAD_REQUEST);
     }
