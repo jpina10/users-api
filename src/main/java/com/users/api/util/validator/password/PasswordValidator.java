@@ -6,6 +6,7 @@ import jakarta.validation.ConstraintValidatorContext;
 import jakarta.validation.ValidationException;
 
 import static com.users.api.util.Guard.guard;
+import static com.users.api.util.Guard.guardText;
 
 public class PasswordValidator implements ConstraintValidator<ValidPassword, String> {
 
@@ -17,7 +18,7 @@ public class PasswordValidator implements ConstraintValidator<ValidPassword, Str
     @Override
     public boolean isValid(String password, ConstraintValidatorContext context) {
         try {
-            guard(password).againstNullOrWhitespace(ValidationMessages.CANNOT_BE_NULL_OR_EMPTY);
+            guardText(password).againstNullOrWhitespace(ValidationMessages.CANNOT_BE_NULL_OR_EMPTY);
             guard(password).againstLength(ValidationMessages.PASSWORD_CANNOT_BE_INFERIOR);
         } catch (ValidationException exception) {
             context.disableDefaultConstraintViolation();
@@ -25,6 +26,7 @@ public class PasswordValidator implements ConstraintValidator<ValidPassword, Str
 
             return false;
         }
+
         return true;
     }
 }

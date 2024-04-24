@@ -2,6 +2,8 @@ package com.users.api.util;
 
 import com.users.api.util.guards.ObjectGuard;
 import com.users.api.util.guards.PasswordGuard;
+import com.users.api.util.guards.TextGuard;
+import com.users.api.util.validator.Text;
 import com.users.api.util.validator.password.PasswordText;
 import lombok.experimental.UtilityClass;
 
@@ -10,6 +12,10 @@ public class Guard {
 
     public static PasswordGuard guard(String value) {
         return new PasswordGuard(new PasswordText(value));
+    }
+
+    public static TextGuard guardText(String value) {
+        return new TextGuard(new Text(value));
     }
 
     public static ObjectGuard guard(Object value) {

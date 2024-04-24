@@ -7,10 +7,6 @@ public class PasswordGuard extends BaseGuard<PasswordText> {
         super(value);
     }
 
-    public void againstNullOrWhitespace(String message) {
-        against(value::isNullOrWhitespace, message);
-    }
-
     public void againstLength(String message) {
         against(value::isLengthInvalid, message);
     }

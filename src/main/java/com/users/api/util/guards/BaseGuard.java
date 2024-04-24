@@ -17,9 +17,4 @@ public class BaseGuard<T> {
         }
     }
 
-    public void againstNull(String message) {
-        if (value == null) {
-            throw new ValidationException(message);
-        }
-    }
 }
