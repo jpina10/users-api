@@ -103,4 +103,9 @@ public class UserController {
     public void updateUser(@Parameter(name = "username") @PathVariable String username, @RequestBody JsonPatch jsonPatch) {
         userService.updateUser(username, jsonPatch);
     }
+
+    @PostMapping("/{username}/{addressId}")
+    public void addAddress(@Parameter(name = "username") @PathVariable String username, @Parameter(name = "addressId") @PathVariable String addressId) {
+        userService.addAddress(username, addressId);
+    }
 }

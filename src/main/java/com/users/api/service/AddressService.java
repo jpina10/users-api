@@ -6,5 +6,5 @@ import com.users.api.dto.CreateAddressDto;
 public interface AddressService {
     AddressDto createAddress(CreateAddressDto createAddressDto);
 
-    void removeAddress(Long id);
+    void deleteAddress(Long id);
 }

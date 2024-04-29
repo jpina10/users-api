@@ -24,4 +24,6 @@ public interface UserService {
     void updateUser(String username, JsonPatch jsonPatch);
 
     List<UserDto> findUsersByCriteria(UserSearchCriteriaDto searchCriteria, Pageable pageable);
+
+    void addAddress(String username, String addressId);
 }
