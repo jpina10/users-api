@@ -20,7 +20,7 @@ public class RestExceptionHandler {
     private static final String SPACE = " ";
     private static final String DELIMITER = ", ";
 
-    @ExceptionHandler({ResourceNotFoundException.class})
+    @ExceptionHandler(ResourceNotFoundException.class)
     private ResponseEntity<RestErrorMessage> resourceNotFoundHandler(ResourceNotFoundException exception) {
         return handleException(exception);
     }
