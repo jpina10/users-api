@@ -1,12 +1,12 @@
-package com.users.api.exception;
+package com.users.api.exception.validation;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(value = HttpStatus.UNAUTHORIZED)
-public class InputValidationException extends RuntimeException {
+public class SecurityInputValidationException extends RuntimeException {
 
-    public InputValidationException(String message){
+    public SecurityInputValidationException(String message){
         super(message);
     }
 }

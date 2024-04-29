@@ -2,7 +2,7 @@ package com.users.api.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.users.api.dto.UserDto;
-import com.users.api.exception.ThirdPartyException;
+import com.users.api.exception.thirdparty.NameApiException;
 import com.users.api.exception.model.ResourceAlreadyExistsException;
 import com.users.api.exception.model.ResourceNotFoundException;
 import com.users.api.factory.TestFactory;
@@ -165,7 +165,7 @@ class UserServiceImplTest {
     void createUserWithApiUnavailable() {
         when(randomUserApiClient.getUserData()).thenReturn(testFactory.getRandomUserApiResponseWithError());
 
-        assertThrows(ThirdPartyException.class, () -> userService.createRandomUser());
+        assertThrows(NameApiException.class, () -> userService.createRandomUser());
 
         verify(randomUserApiClient).getUserData();
         verifyNoInteractions(randomUserMapper);

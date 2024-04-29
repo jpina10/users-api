@@ -1,7 +1,7 @@
 package com.users.api.security;
 
-import com.users.api.exception.InputValidationException;
-import com.users.api.exception.PasswordMatchException;
+import com.users.api.exception.validation.SecurityInputValidationException;
+import com.users.api.exception.validation.PasswordMatchException;
 import com.users.api.exception.model.UserNotFoundException;
 import com.users.api.model.User;
 import com.users.api.repository.UserRepository;
@@ -56,7 +56,7 @@ public class CustomBasicAuthFilter extends OncePerRequestFilter {
 
             return user;
         } catch (UserNotFoundException | PasswordMatchException e) {
-            throw new InputValidationException(WRONG_USERNAME_OR_PASSWORD);
+            throw new SecurityInputValidationException(WRONG_USERNAME_OR_PASSWORD);
         }
     }
 

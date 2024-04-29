@@ -5,7 +5,8 @@ import com.users.api.dto.CreateUserDto;
 import com.users.api.dto.UserCriteriaSpecification;
 import com.users.api.dto.UserDto;
 import com.users.api.dto.UserSearchCriteriaDto;
-import com.users.api.exception.ThirdPartyException;
+import com.users.api.exception.model.AccessException;
+import com.users.api.exception.thirdparty.NameApiException;
 import com.users.api.exception.model.ResourceAlreadyExistsException;
 import com.users.api.exception.model.UserNotFoundException;
 import com.users.api.mapper.AddressMapper;
@@ -75,7 +76,12 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserDto createUser(CreateUserDto createUserDto) {
-        return new UserDto();
+        existsUser(createUserDto.getUsername());
+
+        log.info("saving user with username {}", createUserDto.getUsername());
+        User user = userRepository.save(userMapper.toEntity(createUserDto));
+
+        return userMapper.toDto(user);
     }
 
     @Override
@@ -163,7 +169,7 @@ public class UserServiceImpl implements UserService {
             String errorMessage = response.getError().getErrorMessage();
             log.error(errorMessage);
 
-            throw new ThirdPartyException(errorMessage);
+            throw new NameApiException(errorMessage);
         }
 
         return response;
@@ -174,8 +180,8 @@ public class UserServiceImpl implements UserService {
     }
 
     private void existsUser(String username) {
-        userRepository.findByUsername(username).ifPresent(user1 -> {
-            throw new ResourceAlreadyExistsException("The user with username " + username + " already exists.");
+        userRepository.findByUsername(username).ifPresent(user -> {
+            throw new ResourceAlreadyExistsException(username);
         });
     }
 
@@ -191,7 +197,7 @@ public class UserServiceImpl implements UserService {
                     spec = spec.and(UserCriteriaSpecification.addField(field.getName(), field.get(userSearchCriteriaDto).toString()));
                 }
             } catch (IllegalAccessException exception) {
-                throw new RuntimeException("Cannot access the field " + field.getName());
+                throw new AccessException(field.getName());
             }
         }
 

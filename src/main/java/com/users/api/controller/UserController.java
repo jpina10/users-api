@@ -65,10 +65,10 @@ public class UserController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "The User has been created"),
     })
-    public ResponseEntity<CreateUserResponse> createUser(@Valid @RequestBody CreateUserDto createUserDto) {
-        String username = userService.createUser(createUserDto).getUsername();
+    public ResponseEntity<UserDto> createUser(@Valid @RequestBody CreateUserDto createUserDto) {
+        UserDto userCreated = userService.createUser(createUserDto);
 
-        return new ResponseEntity<>(new CreateUserResponse(username), HttpStatus.CREATED);
+        return new ResponseEntity<>(userCreated, HttpStatus.CREATED);
     }
 
     @Operation(summary = "Creates a User calling a 3rd party API")
