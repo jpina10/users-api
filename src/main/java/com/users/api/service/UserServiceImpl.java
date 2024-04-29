@@ -6,7 +6,7 @@ import com.users.api.dto.UserCriteriaSpecification;
 import com.users.api.dto.UserDto;
 import com.users.api.dto.UserSearchCriteriaDto;
 import com.users.api.exception.model.AccessException;
-import com.users.api.exception.model.ResourceAlreadyExistsException;
+import com.users.api.exception.model.UserAlreadyExistsException;
 import com.users.api.exception.model.UserNotFoundException;
 import com.users.api.exception.thirdparty.NameApiException;
 import com.users.api.mapper.AddressMapper;
@@ -188,7 +188,7 @@ public class UserServiceImpl implements UserService {
 
     private void existsUser(String username) {
         userRepository.findByUsername(username).ifPresent(user -> {
-            throw new ResourceAlreadyExistsException(username);
+            throw new UserAlreadyExistsException(username);
         });
     }
 
