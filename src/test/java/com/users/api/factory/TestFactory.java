@@ -1,5 +1,6 @@
 package com.users.api.factory;
 
+import com.users.api.dto.CreateUserDto;
 import com.users.api.model.Address;
 import com.users.api.model.User;
 import com.users.api.nameapi.RandomUserApiResponse;
@@ -90,5 +91,12 @@ public class TestFactory {
         address.setPostCode("postcode");
 
         return address;
+    }
+
+    public CreateUserDto getCreateUserDto() {
+        CreateUserDto createUserDto = new CreateUserDto();
+        createUserDto.setUsername("username");
+
+        return createUserDto;
     }
 }
