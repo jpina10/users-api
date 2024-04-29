@@ -7,6 +7,4 @@ public interface AddressService {
     AddressDto createAddress(CreateAddressDto createAddressDto);
 
     void deleteAddress(Long id);
-
-    void addAddress(String username, String addressId);
 }

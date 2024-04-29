@@ -46,9 +46,4 @@ public class AddressController {
     public void deleteUser(@Parameter(name = "username") @PathVariable Long addressId) {
         addressService.deleteAddress(addressId);
     }
-
-    @PostMapping("/{username}/{addressId}")
-    public void addAddress(@Parameter(name = "username") @PathVariable String username, @Parameter(name = "id") @PathVariable String addressId) {
-        addressService.addAddress(username, addressId);
-    }
 }

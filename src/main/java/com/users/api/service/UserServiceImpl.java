@@ -6,12 +6,14 @@ import com.users.api.dto.UserCriteriaSpecification;
 import com.users.api.dto.UserDto;
 import com.users.api.dto.UserSearchCriteriaDto;
 import com.users.api.exception.model.AccessException;
+import com.users.api.exception.model.AddressNotFoundException;
 import com.users.api.exception.model.UserAlreadyExistsException;
 import com.users.api.exception.model.UserNotFoundException;
 import com.users.api.exception.thirdparty.NameApiException;
 import com.users.api.mapper.AddressMapper;
 import com.users.api.mapper.RandomUserMapper;
 import com.users.api.mapper.UserMapper;
+import com.users.api.model.Address;
 import com.users.api.model.Role;
 import com.users.api.model.User;
 import com.users.api.nameapi.RandomUserApiResponse;
@@ -24,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -78,6 +81,16 @@ public class UserServiceImpl implements UserService {
         Page<User> userPage = userRepository.findAll(specification, pageable);
 
         return userPage.map(userMapper::toDto).toList();
+    }
+
+    @Override
+    public void addAddress(String username, String addressId) {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
+        Address address = addressRepository.findById(Long.valueOf(addressId)).orElseThrow(() -> new AddressNotFoundException(addressId));
+
+        user.addAddress(address);
+
+        userRepository.save(user);
     }
 
     @Override
