@@ -228,14 +228,14 @@ class UserServiceImplTest {
     void findUserByCriteria() {
         UserSearchCriteriaDto searchCriteria = new UserSearchCriteriaDto();
         searchCriteria.setUsername("username");
-        Pageable pageable = PageRequest.of(0, 10);  // Example Pageable
+
+        Pageable pageable = PageRequest.of(0, 20);
 
         User user = new User();
         UserDto userDto = new UserDto();
         Page<User> userPage = new PageImpl<>(Collections.singletonList(user));
 
         when(userRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(userPage);
-
         when(userMapper.toDto(any(User.class))).thenReturn(userDto);
 
         List<UserDto> result = userService.findUsersByCriteria(searchCriteria, pageable);
