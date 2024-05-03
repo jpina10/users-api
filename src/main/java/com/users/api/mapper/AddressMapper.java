@@ -19,6 +19,4 @@ public interface AddressMapper {
     AddressDto toDto(Address address);
 
     Address toEntity(CreateAddressDto createAddressDto);
-
-    CreateAddressDto toCreateAddressDto(Address address);
 }
