@@ -18,11 +18,5 @@ public interface AddressMapper {
     @Mapping(target = "street.number", source = "number")
     AddressDto toDto(Address address);
 
-    @Mapping(source = "street.name", target = "street")
-    @Mapping(source = "street.number", target = "number")
-    Address toEntity(AddressDto addressDto);
-
     Address toEntity(CreateAddressDto createAddressDto);
-
-    CreateAddressDto toCreateAddressDto(Address address);
 }

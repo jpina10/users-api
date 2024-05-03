@@ -1,15 +1,19 @@
 package com.users.api.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.users.api.dto.CreateUserDto;
 import com.users.api.dto.UserCriteriaSpecification;
 import com.users.api.dto.UserDto;
 import com.users.api.dto.UserSearchCriteriaDto;
-import com.users.api.exception.ThirdPartyException;
-import com.users.api.exception.model.ResourceAlreadyExistsException;
+import com.users.api.exception.model.AccessException;
+import com.users.api.exception.model.AddressNotFoundException;
+import com.users.api.exception.model.UserAlreadyExistsException;
 import com.users.api.exception.model.UserNotFoundException;
+import com.users.api.exception.thirdparty.NameApiException;
 import com.users.api.mapper.AddressMapper;
 import com.users.api.mapper.RandomUserMapper;
 import com.users.api.mapper.UserMapper;
+import com.users.api.model.Address;
 import com.users.api.model.Role;
 import com.users.api.model.User;
 import com.users.api.nameapi.RandomUserApiResponse;
@@ -22,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +36,13 @@ import javax.json.JsonValue;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Objects;
+
+import static com.users.api.util.log.LoggingMessages.CALLING_RANDOM_USER_API;
+import static com.users.api.util.log.LoggingMessages.DELETING;
+import static com.users.api.util.log.LoggingMessages.ORIGINAL_USER;
+import static com.users.api.util.log.LoggingMessages.PATCHED_USER;
+import static com.users.api.util.log.LoggingMessages.RETRIEVING;
+import static com.users.api.util.log.LoggingMessages.SAVING;
 
 @Service
 @RequiredArgsConstructor
@@ -56,7 +68,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto findUserByUserName(String username) {
-        log.info("Retrieving user with username: {}", username);
+        log.info(RETRIEVING, username);
         return userRepository.findByUsername(username)
                 .map(userMapper::toDto)
                 .orElseThrow(() -> new UserNotFoundException(username));
@@ -69,6 +81,27 @@ public class UserServiceImpl implements UserService {
         Page<User> userPage = userRepository.findAll(specification, pageable);
 
         return userPage.map(userMapper::toDto).toList();
+    }
+
+    @Override
+    public void addAddress(String username, String addressId) {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
+        Address address = addressRepository.findById(Long.valueOf(addressId)).orElseThrow(() -> new AddressNotFoundException(addressId));
+
+        user.addAddress(address);
+
+        userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public UserDto createUser(CreateUserDto createUserDto) {
+        existsUser(createUserDto.getUsername());
+
+        log.info(SAVING, createUserDto.getUsername());
+        User user = userRepository.save(userMapper.toEntity(createUserDto));
+
+        return userMapper.toDto(user);
     }
 
     @Override
@@ -86,7 +119,7 @@ public class UserServiceImpl implements UserService {
 
         String username = user.getUsername();
 
-        log.info("saving user with username {}", username);
+        log.info(SAVING, username);
         userRepository.save(user);
 
         return username;
@@ -97,7 +130,7 @@ public class UserServiceImpl implements UserService {
     public void deleteUser(String username) {
         User user = this.getUser(username);
 
-        log.debug("deleting user with username {}", user.getUsername());
+        log.debug(DELETING, user.getUsername());
         userRepository.delete(user);
     }
 
@@ -105,14 +138,14 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void updateUser(String username, JsonPatch jsonPatch) {
         User originalUser = this.getUser(username);
-        log.debug("original user {}", originalUser);
+        log.debug(ORIGINAL_USER, originalUser);
 
         JsonStructure target = objectMapper.convertValue(originalUser, JsonStructure.class);
         JsonValue patched = jsonPatch.apply(target);
 
         var patchedUser = objectMapper.convertValue(patched, User.class);
 
-        log.debug("saving patched user {}", patchedUser);
+        log.debug(PATCHED_USER, patchedUser);
         userRepository.save(patchedUser);
     }
 
@@ -143,7 +176,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private RandomUserApiResponse callRandomUserApi() {
-        log.info("calling random user API...");
+        log.info(CALLING_RANDOM_USER_API);
 
         var response = randomUserApiClient.getUserData();
         var hasError = hasError(response);
@@ -156,7 +189,7 @@ public class UserServiceImpl implements UserService {
             String errorMessage = response.getError().getErrorMessage();
             log.error(errorMessage);
 
-            throw new ThirdPartyException(errorMessage);
+            throw new NameApiException(errorMessage);
         }
 
         return response;
@@ -167,8 +200,8 @@ public class UserServiceImpl implements UserService {
     }
 
     private void existsUser(String username) {
-        userRepository.findByUsername(username).ifPresent(user1 -> {
-            throw new ResourceAlreadyExistsException("The user with username " + username + " already exists.");
+        userRepository.findByUsername(username).ifPresent(user -> {
+            throw new UserAlreadyExistsException(username);
         });
     }
 
@@ -184,7 +217,7 @@ public class UserServiceImpl implements UserService {
                     spec = spec.and(UserCriteriaSpecification.addField(field.getName(), field.get(userSearchCriteriaDto).toString()));
                 }
             } catch (IllegalAccessException exception) {
-                throw new RuntimeException("Cannot access the field " + field.getName());
+                throw new AccessException(field.getName());
             }
         }
 

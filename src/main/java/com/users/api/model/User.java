@@ -36,7 +36,7 @@ public class User {
 
     private boolean isEnabled;
 
-    @Column(table = "user_details")
+    @Column(table = "user_details", unique = true)
     private String email;
 
     @Column(table = "user_details")

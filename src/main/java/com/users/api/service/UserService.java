@@ -1,5 +1,6 @@
 package com.users.api.service;
 
+import com.users.api.dto.CreateUserDto;
 import com.users.api.dto.UserDto;
 import com.users.api.dto.UserSearchCriteriaDto;
 import org.springframework.data.domain.Pageable;
@@ -12,6 +13,8 @@ public interface UserService {
 
     String createRandomUser();
 
+    UserDto createUser(CreateUserDto createUserDto);
+
     void enableUser(String username);
 
     void deleteUser(String username);
@@ -21,4 +24,6 @@ public interface UserService {
     void updateUser(String username, JsonPatch jsonPatch);
 
     List<UserDto> findUsersByCriteria(UserSearchCriteriaDto searchCriteria, Pageable pageable);
+
+    void addAddress(String username, String addressId);
 }

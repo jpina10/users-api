@@ -22,8 +22,6 @@ public class Address {
     private String number;
     private String city;
     private String country;
-
-    @Column(unique = true)
     private String postCode;
 
     @JsonIgnore

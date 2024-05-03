@@ -6,7 +6,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 @Getter
 public class UserPrincipal {
@@ -22,7 +21,7 @@ public class UserPrincipal {
 
         this.authorities = user.getRoles().stream()
                 .map(role -> new SimpleGrantedAuthority(ROLE.concat(role.name())))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public static UserPrincipal create(User user) {

@@ -3,7 +3,6 @@ package com.users.api.service;
 import com.users.api.dto.AddressDto;
 import com.users.api.dto.CreateAddressDto;
 import com.users.api.exception.model.AddressNotFoundException;
-import com.users.api.exception.model.ResourceAlreadyExistsException;
 import com.users.api.mapper.AddressMapper;
 import com.users.api.model.Address;
 import com.users.api.repository.AddressRepository;
@@ -21,8 +20,6 @@ public class AddressServiceImpl implements AddressService {
     @Override
     @Transactional
     public AddressDto createAddress(CreateAddressDto createAddressDto) {
-        findAddress(createAddressDto.getPostCode());
-
         Address address = addressMapper.toEntity(createAddressDto);
         addressRepository.save(address);
 
@@ -31,17 +28,9 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     @Transactional
-    public void removeAddress(Long id) {
-        Address address = addressRepository.findById(id)
-                .orElseThrow(() -> new AddressNotFoundException(id.toString()));
+    public void deleteAddress(Long id) {
+        Address address = addressRepository.findById(id).orElseThrow(() -> new AddressNotFoundException(id.toString()));
 
         addressRepository.delete(address);
     }
-
-    private void findAddress(String postCode) {
-        addressRepository.findByPostCode(postCode).ifPresent(address -> {
-            throw new ResourceAlreadyExistsException("Address with postal code " + postCode + " already exists");
-        });
-    }
-
 }

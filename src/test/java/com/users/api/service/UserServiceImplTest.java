@@ -1,10 +1,12 @@
 package com.users.api.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.users.api.dto.CreateUserDto;
 import com.users.api.dto.UserDto;
-import com.users.api.exception.ThirdPartyException;
+import com.users.api.dto.UserSearchCriteriaDto;
 import com.users.api.exception.model.ResourceAlreadyExistsException;
 import com.users.api.exception.model.ResourceNotFoundException;
+import com.users.api.exception.thirdparty.NameApiException;
 import com.users.api.factory.TestFactory;
 import com.users.api.mapper.AddressMapper;
 import com.users.api.mapper.RandomUserMapper;
@@ -23,14 +25,18 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.json.Json;
 import javax.json.JsonPatch;
 import javax.json.JsonStructure;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,7 +44,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -94,7 +102,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void createUserWithApiAvailableAndNotExistingUsername() {
+    void createRandomUserWithApiAvailableAndNotExistingUsername() {
         User user = testFactory.getUser();
         Address address = testFactory.getAddress();
 
@@ -120,7 +128,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void createUserWithApiAvailableAndExistingUsernameShouldThrowException() {
+    void createRandomUserWithApiAvailableAndExistingUsernameShouldThrowException() {
         User user = testFactory.getUser();
         RandomUserApiResponse randomUserApiResponse = testFactory.getRandomUserApiResponse();
         Result result = randomUserApiResponse.getResults().get(0);
@@ -162,10 +170,10 @@ class UserServiceImplTest {
     }
 
     @Test
-    void createUserWithApiUnavailable() {
+    void createRandomUserWithApiUnavailable() {
         when(randomUserApiClient.getUserData()).thenReturn(testFactory.getRandomUserApiResponseWithError());
 
-        assertThrows(ThirdPartyException.class, () -> userService.createRandomUser());
+        assertThrows(NameApiException.class, () -> userService.createRandomUser());
 
         verify(randomUserApiClient).getUserData();
         verifyNoInteractions(randomUserMapper);
@@ -214,5 +222,44 @@ class UserServiceImplTest {
         assertThat(allUsers).hasSameSizeAs(users);
 
         verify(userRepository).findAll(pageable);
+    }
+
+    @Test
+    void findUserByCriteria() {
+        UserSearchCriteriaDto searchCriteria = new UserSearchCriteriaDto();
+        searchCriteria.setUsername("username");
+
+        Pageable pageable = PageRequest.of(0, 20);
+
+        User user = new User();
+        UserDto userDto = new UserDto();
+        Page<User> userPage = new PageImpl<>(Collections.singletonList(user));
+
+        when(userRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(userPage);
+        when(userMapper.toDto(any(User.class))).thenReturn(userDto);
+
+        List<UserDto> result = userService.findUsersByCriteria(searchCriteria, pageable);
+
+        assertThat(result).isNotNull();
+        assertThat(result).hasSize(1);
+        assertThat(userDto).isSameAs(result.get(0));
+
+        verify(userRepository, times(1)).findAll(any(Specification.class), eq(pageable));
+
+        verify(userMapper, times(1)).toDto(Mockito.any(User.class));
+    }
+
+    @Test
+    void createUser() {
+        User user = testFactory.getUser();
+        CreateUserDto createUserDto = testFactory.getCreateUserDto();
+
+        when(userRepository.findByUsername(createUserDto.getUsername())).thenReturn(Optional.empty());
+        when(userMapper.toEntity(createUserDto)).thenReturn(user);
+
+        userService.createUser(createUserDto);
+
+        verify(userRepository).findByUsername(createUserDto.getUsername());
+        verify(userRepository).save(user);
     }
 }
