@@ -5,10 +5,14 @@ import com.users.api.dto.CreateAddressDto;
 import com.users.api.exception.model.AddressNotFoundException;
 import com.users.api.mapper.AddressMapper;
 import com.users.api.model.Address;
+import com.users.api.model.User;
 import com.users.api.repository.AddressRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +34,8 @@ public class AddressServiceImpl implements AddressService {
     @Transactional
     public void deleteAddress(Long id) {
         Address address = addressRepository.findById(id).orElseThrow(() -> new AddressNotFoundException(id.toString()));
+        List<User> users = new ArrayList<>(address.getUsers());
+        users.forEach(user -> user.removeAddress(address));
 
         addressRepository.delete(address);
     }
