@@ -34,6 +34,7 @@ public class AddressServiceImpl implements AddressService {
     @Transactional
     public void deleteAddress(Long id) {
         Address address = addressRepository.findById(id).orElseThrow(() -> new AddressNotFoundException(id.toString()));
+        //delete from users while iterating a collection and prevent ConcurrentModificationException
         List<User> users = new ArrayList<>(address.getUsers());
         users.forEach(user -> user.removeAddress(address));
 
