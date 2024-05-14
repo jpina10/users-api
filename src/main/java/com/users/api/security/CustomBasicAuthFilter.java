@@ -1,8 +1,7 @@
 package com.users.api.security;
 
-import com.users.api.exception.validation.SecurityInputValidationException;
-import com.users.api.exception.validation.PasswordMatchException;
 import com.users.api.exception.model.UserNotFoundException;
+import com.users.api.exception.validation.SecurityInputValidationException;
 import com.users.api.model.User;
 import com.users.api.repository.UserRepository;
 import jakarta.servlet.FilterChain;
@@ -21,14 +20,14 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Base64;
 
+import static com.users.api.security.SecurityMessages.WRONG_USERNAME_OR_PASSWORD;
+
 @Component
 @RequiredArgsConstructor
 public class CustomBasicAuthFilter extends OncePerRequestFilter {
 
     private static final String AUTHORIZATION = "Authorization";
     private static final String BASIC = "Basic ";
-    private static final String INCORRECT_PASSWORD = "Incorrect password";
-    private static final String WRONG_USERNAME_OR_PASSWORD = "Wrong username or password";
     private static final String EMPTY_STRING = "";
     private static final String DOUBLE_DOTS = ":";
 
@@ -50,19 +49,15 @@ public class CustomBasicAuthFilter extends OncePerRequestFilter {
     }
 
     private User getValidatedUser(String username, String password) {
-        try {
-            User user = getUserByUsername(username);
-            validatePassword(user, password);
+        User user = getUserByUsername(username);
+        validatePassword(user, password);
 
-            return user;
-        } catch (UserNotFoundException | PasswordMatchException e) {
-            throw new SecurityInputValidationException(WRONG_USERNAME_OR_PASSWORD);
-        }
+        return user;
     }
 
     private void validatePassword(User user, String password) {
         if (!checkPassword(user.getPassword(), password)) {
-            throw new PasswordMatchException(INCORRECT_PASSWORD);
+            throw new SecurityInputValidationException(WRONG_USERNAME_OR_PASSWORD);
         }
     }
 
