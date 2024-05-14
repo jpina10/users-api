@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
+import java.util.stream.Collectors;
 
 @RestController
 @Tag(name = "Auth", description = "Auth")
@@ -39,11 +40,14 @@ public class AuthController {
 
         var now = Instant.now();
         var expiresIn = 300L;
+        String collect = user.getRoles().stream().map(Enum::name).collect(Collectors.joining(" "));
+
         var claims = JwtClaimsSet.builder()
                 .issuer("users-api")
                 .subject(String.valueOf(user.getId()))
                 .expiresAt(now.plusSeconds(expiresIn))
                 .issuedAt(now)
+                .claim("scope", collect)
                 .build();
 
         String jwtValue = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();

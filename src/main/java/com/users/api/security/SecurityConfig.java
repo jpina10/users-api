@@ -54,8 +54,8 @@ public class SecurityConfig {
                         .requestMatchers(antMatcher(HttpMethod.POST, "/api/v1/auth/login")).permitAll()
                         .requestMatchers(antMatcher(HttpMethod.DELETE, "/api/v1/users")).hasRole("ADMIN")
                         .anyRequest().authenticated())
-                .addFilterBefore(customBasicAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
+                .addFilterBefore(customBasicAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
