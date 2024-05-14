@@ -1,4 +1,4 @@
-package com.users.api.security;
+package com.users.api.security.basic;
 
 import com.users.api.exception.model.UserNotFoundException;
 import com.users.api.exception.validation.SecurityInputValidationException;

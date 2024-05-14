@@ -1,4 +1,4 @@
-package com.users.api.security;
+package com.users.api.security.basic;
 
 import com.users.api.model.User;
 import lombok.Getter;
