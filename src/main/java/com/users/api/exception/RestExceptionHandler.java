@@ -4,6 +4,7 @@ import com.users.api.exception.model.AccessException;
 import com.users.api.exception.model.ResourceAlreadyExistsException;
 import com.users.api.exception.model.ResourceNotFoundException;
 import com.users.api.exception.rest.RestErrorMessage;
+import com.users.api.exception.validation.SecurityInputValidationException;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,12 +27,17 @@ public class RestExceptionHandler {
     }
 
     @ExceptionHandler(ResourceAlreadyExistsException.class)
-    private ResponseEntity<RestErrorMessage> illegalAccessHandler(ResourceAlreadyExistsException exception) {
+    private ResponseEntity<RestErrorMessage> resourceAlreadyExistsHandler(ResourceAlreadyExistsException exception) {
         return handleException(exception);
     }
 
     @ExceptionHandler(AccessException.class)
     private ResponseEntity<RestErrorMessage> illegalAccessHandler(AccessException exception) {
+        return handleException(exception);
+    }
+
+    @ExceptionHandler(SecurityInputValidationException.class)
+    private ResponseEntity<RestErrorMessage> securityInputHandler(SecurityInputValidationException exception) {
         return handleException(exception);
     }
 
