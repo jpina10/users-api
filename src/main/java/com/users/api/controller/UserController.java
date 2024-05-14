@@ -88,7 +88,7 @@ public class UserController {
         return userService.findAllUsers(pageable);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') || hasAuthority('SCOPE_ADMIN')")
     @DeleteMapping("/{username}")
     public void deleteUser(@Parameter(name = "username") @PathVariable String username) {
         userService.deleteUser(username);

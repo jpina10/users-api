@@ -20,6 +20,7 @@ public class DataBaseInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
         addAdminUser();
+        addDefaultUser();
     }
 
     private void addAdminUser() {
@@ -27,6 +28,15 @@ public class DataBaseInitializer implements CommandLineRunner {
         user.setUsername("admin");
         user.setPassword("admin");
         user.setRoles(Set.of(Role.ADMIN));
+
+        userRepository.save(user);
+    }
+
+    private void addDefaultUser() {
+        User user = new User();
+        user.setUsername("username");
+        user.setPassword("password");
+        user.setRoles(Set.of(Role.USER));
 
         userRepository.save(user);
     }
